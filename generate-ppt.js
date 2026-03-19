@@ -48,7 +48,7 @@ function addFooter(slide, pageNum, totalPages) {
   });
 }
 
-const TOTAL_SLIDES = 12;
+const TOTAL_SLIDES = 14;
 
 // ============================================================
 // SLIDE 1: Title Slide
@@ -211,7 +211,7 @@ slide4.addShape(pptx.shapes.RECTANGLE, {
   x: 0.8, y: 1.15, w: 2, h: 0.04, fill: { color: PRIMARY }
 });
 
-slide4.addText('One unified AI-powered platform that covers the entire career growth journey — from skill assessment to job readiness.', {
+slide4.addText('One unified AI-powered platform that covers the entire career growth journey — from skill assessment to job readiness, with per-user auth & progress tracking.', {
   x: 0.8, y: 1.4, w: 11.73, h: 0.6,
   fontSize: 14, fontFace: 'Segoe UI', color: LIGHT_GRAY, italic: true
 });
@@ -222,30 +222,32 @@ const features = [
   { icon: '📄', title: 'Resume Analyzer', desc: 'ATS scoring, JD comparison, missing keyword detection, and AI-rewritten bullet points' },
   { icon: '🎤', title: 'Mock Interview', desc: '5-question structured interviews with per-answer feedback, scoring, and radar chart analysis' },
   { icon: '🧭', title: 'Career Path Finder', desc: '3 AI-recommended career paths with match %, salary data, skills gap, and action plans' },
-  { icon: '📈', title: 'Progress Dashboard', desc: 'Chart.js-powered dashboard tracking skill scores, resume improvements, and interview history' },
+  { icon: '🐛', title: 'AI Code Debugger', desc: 'Paste code in any language — AI finds bugs, security issues & performance problems line-by-line with fixes' },
+  { icon: '�', title: 'Login & Auth System', desc: 'User signup/login with SQLite DB, bcrypt passwords, session cookies, and server-side progress persistence' },
+  { icon: '�📈', title: 'Progress Dashboard', desc: 'Chart.js-powered dashboard tracking skill scores, resume improvements, and interview history over time' },
 ];
 
 features.forEach((f, i) => {
-  const col = i % 3;
-  const row = Math.floor(i / 3);
-  const x = 0.8 + col * 4.0;
-  const y = 2.2 + row * 2.4;
+  const col = i % 4;
+  const row = Math.floor(i / 4);
+  const x = 0.5 + col * 3.15;
+  const y = 2.2 + row * 2.5;
 
   slide4.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-    x: x, y: y, w: 3.7, h: 2.1, rectRadius: 0.15,
+    x: x, y: y, w: 2.95, h: 2.2, rectRadius: 0.15,
     fill: { color: CARD_BG },
     line: { color: '2A2A3E', width: 1 }
   });
   slide4.addText(f.icon, {
-    x: x + 0.2, y: y + 0.2, w: 0.7, h: 0.6, fontSize: 28
+    x: x + 0.2, y: y + 0.15, w: 0.7, h: 0.6, fontSize: 26
   });
   slide4.addText(f.title, {
-    x: x + 0.2, y: y + 0.75, w: 3.3, h: 0.4,
-    fontSize: 14, fontFace: 'Segoe UI', bold: true, color: WHITE
+    x: x + 0.2, y: y + 0.7, w: 2.55, h: 0.4,
+    fontSize: 12.5, fontFace: 'Segoe UI', bold: true, color: WHITE
   });
   slide4.addText(f.desc, {
-    x: x + 0.2, y: y + 1.15, w: 3.3, h: 0.8,
-    fontSize: 10, fontFace: 'Segoe UI', color: LIGHT_GRAY, lineSpacingMultiple: 1.25
+    x: x + 0.2, y: y + 1.1, w: 2.55, h: 0.95,
+    fontSize: 9, fontFace: 'Segoe UI', color: LIGHT_GRAY, lineSpacingMultiple: 1.25
   });
 });
 
@@ -274,7 +276,7 @@ slide5.addText('🖥️  Frontend (Client)', {
   fontSize: 15, fontFace: 'Segoe UI', bold: true, color: ACCENT
 });
 
-const clientItems = ['index.html — Home + Dashboard', 'skill-assessment.html — Quiz UI', 'learning-roadmap.html — Timeline', 'resume-analyzer.html — ATS Analysis', 'mock-interview.html — Interview Sim', 'career-path.html — Path Finder', 'navbar.js — Shared Components', 'styles.css — Dark Theme (3500+ lines)', 'Chart.js 4.4 — Dashboard Charts'];
+const clientItems = ['index.html — Home + Dashboard', 'skill-assessment.html — Quiz UI', 'learning-roadmap.html — Timeline', 'resume-analyzer.html — ATS Analysis', 'mock-interview.html — Interview Sim', 'career-path.html — Path Finder', 'code-debugger.html — Debugger UI', 'login.html — Auth Pages', 'navbar.js — Shared Components', 'styles.css — Dark Theme (3600+ lines)'];
 clientItems.forEach((item, i) => {
   slide5.addText(`▸ ${item}`, {
     x: 1.0, y: 2.35 + i * 0.42, w: 3.2, h: 0.38,
@@ -301,7 +303,7 @@ slide5.addText('⚙️  Backend (Server)', {
   fontSize: 15, fontFace: 'Segoe UI', bold: true, color: GREEN
 });
 
-const serverItems = ['Node.js + Express 4.18', '', 'Routes:', '  /api/assessment', '  /api/ai (roadmap)', '  /api/resume', '  /api/interview', '  /api/career', '', 'claude.js — API Wrapper', 'JSON Parse + Fallback'];
+const serverItems = ['Node.js + Express 4.18', '', 'Routes:', '  /api/assessment', '  /api/ai (roadmap)', '  /api/resume', '  /api/interview', '  /api/career', '  /api/debugger', '  /api/auth (login/signup)', 'claude.js — API Wrapper'];
 serverItems.forEach((item, i) => {
   slide5.addText(item ? `▸ ${item}` : '', {
     x: 6.0, y: 2.3 + i * 0.38, w: 2.6, h: 0.35,
@@ -328,7 +330,7 @@ slide5.addText('🤖  AI Engine', {
   fontSize: 15, fontFace: 'Segoe UI', bold: true, color: YELLOW
 });
 
-const aiItems = ['Anthropic Claude API', 'Model: claude-sonnet-4-20250514', '', 'Capabilities:', '  Quiz Generation', '  Skill Evaluation', '  Resume Analysis', '  Interview Q&A', '  Career Matching', '', 'Structured JSON Output'];
+const aiItems = ['Anthropic Claude API', 'Model: claude-sonnet-4-20250514', '', 'Capabilities:', '  Quiz Generation', '  Skill Evaluation', '  Resume Analysis', '  Interview Q&A', '  Career Matching', '  Code Debugging', 'Structured JSON Output'];
 aiItems.forEach((item, i) => {
   slide5.addText(item ? `▸ ${item}` : '', {
     x: 10.4, y: 2.3 + i * 0.38, w: 2.3, h: 0.35,
@@ -336,10 +338,14 @@ aiItems.forEach((item, i) => {
   });
 });
 
-// Storage note at bottom
+// Database Layer (below the 3 columns)
 slide5.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-  x: 3, y: 6.85, w: 7.33, h: 0.0, rectRadius: 0.1,
-  fill: { color: CARD_BG }
+  x: 3, y: 6.75, w: 7.33, h: 0.6, rectRadius: 0.1,
+  fill: { color: CARD_BG }, line: { color: ACCENT, width: 1 }
+});
+slide5.addText('💾  SQLite (better-sqlite3) — Users + Progress tables  |  bcryptjs — Password hashing  |  express-session — 7-day cookies', {
+  x: 3.15, y: 6.78, w: 7.05, h: 0.55,
+  fontSize: 9, fontFace: 'Segoe UI', color: ACCENT, valign: 'middle'
 });
 
 // ============================================================
@@ -401,9 +407,9 @@ slide6.addText('Chart.js Visualizations', {
 // Feature explanations
 const homeFeatures = [
   { title: 'Hero Section', desc: 'Animated SVG gradient orbs with grid pattern background and a compelling CTA' },
-  { title: 'Progress Dashboard', desc: '4 stat cards showing latest scores + 2 Chart.js charts (trend line & overview bar)' },
-  { title: 'Feature Cards', desc: '6 interactive cards with hover effects linking to each tool' },
-  { title: 'Testimonials', desc: 'User success stories with role badges and star ratings' },
+  { title: 'Progress Dashboard', desc: '4 stat cards + 2 Chart.js charts. Loads from server for logged-in users, localStorage for guests' },
+  { title: 'Feature Cards', desc: '8 interactive cards with hover effects linking to each tool including Code Debugger' },
+  { title: 'Auth-Aware Navbar', desc: 'User avatar with initials + dropdown menu when signed in, Sign In button when not' },
   { title: 'Scroll Animations', desc: 'IntersectionObserver-based reveal animations on every section' },
 ];
 
@@ -645,42 +651,207 @@ careerFeatures.forEach((f, i) => {
 });
 
 // ============================================================
-// SLIDE 10: Tech Stack
+// SLIDE 10: AI Code Debugger
 // ============================================================
 let slide10 = pptx.addSlide();
 addBg(slide10);
 addFooter(slide10, 10, TOTAL_SLIDES);
 
-slide10.addText('🎨  Tech Stack', {
+slide10.addText('🐛  AI Code Debugger', {
   x: 0.8, y: 0.4, w: 11.73, h: 0.8,
-  fontSize: 30, fontFace: 'Segoe UI', bold: true, color: WHITE
+  fontSize: 28, fontFace: 'Segoe UI', bold: true, color: WHITE
 });
 slide10.addShape(pptx.shapes.RECTANGLE, {
   x: 0.8, y: 1.15, w: 2, h: 0.04, fill: { color: PRIMARY }
 });
 
+slide10.addText('Paste any code and let AI analyze it line-by-line — instantly find bugs, security issues, performance problems, and get corrected code.', {
+  x: 0.8, y: 1.4, w: 11.73, h: 0.5,
+  fontSize: 13, fontFace: 'Segoe UI', color: LIGHT_GRAY, italic: true
+});
+
+// Left: How It Works
+slide10.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  x: 0.6, y: 2.1, w: 6.2, h: 4.8, rectRadius: 0.15,
+  fill: { color: CARD_BG }, line: { color: RED, width: 1.5 }
+});
+slide10.addText('🔍 How It Works', {
+  x: 0.8, y: 2.25, w: 5.8, h: 0.5,
+  fontSize: 16, fontFace: 'Segoe UI', bold: true, color: RED
+});
+
+const debugSteps = [
+  { num: '1', text: 'Select language (18 languages) or auto-detect' },
+  { num: '2', text: 'Paste code in the editor with live line numbers' },
+  { num: '3', text: 'Press Ctrl+Enter or click Analyze — AI scans every line' },
+  { num: '4', text: 'Issues appear as color-coded cards (Error / Warning / Info)' },
+  { num: '5', text: 'Click any issue to highlight that line in the editor' },
+  { num: '6', text: 'Each issue shows the exact fix with corrected code' },
+  { num: '7', text: 'View the fully fixed version and copy it with one click' },
+];
+debugSteps.forEach((s, i) => {
+  slide10.addShape(pptx.shapes.OVAL, {
+    x: 1.0, y: 2.9 + i * 0.55, w: 0.35, h: 0.35,
+    fill: { color: PRIMARY }, line: { color: PRIMARY, width: 0 }
+  });
+  slide10.addText(s.num, {
+    x: 1.0, y: 2.9 + i * 0.55, w: 0.35, h: 0.35,
+    fontSize: 10, fontFace: 'Segoe UI', bold: true, color: WHITE, align: 'center', valign: 'middle'
+  });
+  slide10.addText(s.text, {
+    x: 1.5, y: 2.87 + i * 0.55, w: 5.1, h: 0.4,
+    fontSize: 10.5, fontFace: 'Segoe UI', color: LIGHT_GRAY
+  });
+});
+
+// Right: Features
+slide10.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  x: 7.1, y: 2.1, w: 5.7, h: 4.8, rectRadius: 0.15,
+  fill: { color: CARD_BG }, line: { color: ACCENT, width: 1.5 }
+});
+slide10.addText('✨ Key Features', {
+  x: 7.3, y: 2.25, w: 5.3, h: 0.5,
+  fontSize: 16, fontFace: 'Segoe UI', bold: true, color: ACCENT
+});
+
+const debugFeatures = [
+  '✅ Split-pane: Code editor + Results panel',
+  '✅ Line numbers with colored severity markers',
+  '✅ Code quality score ring (0-100)',
+  '✅ Issue categories: syntax, logic, security, perf',
+  '✅ Severity tabs: Errors / Warnings / Info filter',
+  '✅ Click issue → highlights line in editor',
+  '✅ AI-suggested fix per issue + full corrected code',
+  '✅ 18 languages: JS, Python, Java, C++, Go, etc.',
+  '✅ Built-in example code with intentional bugs',
+  '✅ Improvement suggestions for clean code too',
+];
+debugFeatures.forEach((f, i) => {
+  slide10.addText(f, {
+    x: 7.4, y: 2.85 + i * 0.4, w: 5.2, h: 0.35,
+    fontSize: 10, fontFace: 'Segoe UI', color: LIGHT_GRAY
+  });
+});
+
+// ============================================================
+// SLIDE 11: Login / Auth System
+// ============================================================
+let slide11 = pptx.addSlide();
+addBg(slide11);
+addFooter(slide11, 11, TOTAL_SLIDES);
+
+slide11.addText('🔐  Login & Authentication System', {
+  x: 0.8, y: 0.4, w: 11.73, h: 0.8,
+  fontSize: 28, fontFace: 'Segoe UI', bold: true, color: WHITE
+});
+slide11.addShape(pptx.shapes.RECTANGLE, {
+  x: 0.8, y: 1.15, w: 2.5, h: 0.04, fill: { color: PRIMARY }
+});
+
+slide11.addText('Per-user data persistence — signup, login, session management, and server-side progress tracking so users never lose their data.', {
+  x: 0.8, y: 1.4, w: 11.73, h: 0.5,
+  fontSize: 13, fontFace: 'Segoe UI', color: LIGHT_GRAY, italic: true
+});
+
+// Auth flow cards
+const authCards = [
+  { icon: '📝', title: 'Sign Up', desc: 'Name, email, password, role\nBcrypt password hashing\nDuplicate email prevention', color: PRIMARY },
+  { icon: '🔑', title: 'Sign In', desc: 'Email + password auth\n7-day session cookies\nAuto-redirect if logged in', color: ACCENT },
+  { icon: '💾', title: 'Progress Sync', desc: 'All scores saved to SQLite\nSkill, Resume, Interview tracked\nServer-first data loading', color: GREEN },
+  { icon: '👤', title: 'User Menu', desc: 'Avatar with initials\nDropdown (name, email)\nSign out with redirect', color: YELLOW },
+];
+
+authCards.forEach((c, i) => {
+  const x = 0.5 + i * 3.2;
+  slide11.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+    x: x, y: 2.2, w: 3.0, h: 2.8, rectRadius: 0.15,
+    fill: { color: CARD_BG }, line: { color: c.color, width: 1.5 }
+  });
+  slide11.addText(c.icon, {
+    x: x + 1.1, y: 2.35, w: 0.8, h: 0.6, fontSize: 28, align: 'center'
+  });
+  slide11.addText(c.title, {
+    x: x + 0.2, y: 2.95, w: 2.6, h: 0.4,
+    fontSize: 14, fontFace: 'Segoe UI', bold: true, color: c.color, align: 'center'
+  });
+  slide11.addText(c.desc, {
+    x: x + 0.2, y: 3.4, w: 2.6, h: 1.3,
+    fontSize: 10.5, fontFace: 'Segoe UI', color: LIGHT_GRAY, align: 'center', lineSpacingMultiple: 1.3
+  });
+});
+
+// Database schema at bottom
+slide11.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  x: 0.6, y: 5.3, w: 5.9, h: 1.6, rectRadius: 0.15,
+  fill: { color: CARD_BG }, line: { color: '3A3A4E', width: 1 }
+});
+slide11.addText('💾 Users Table', {
+  x: 0.8, y: 5.4, w: 5.5, h: 0.4,
+  fontSize: 12, fontFace: 'Segoe UI', bold: true, color: PRIMARY
+});
+slide11.addText('id  |  name  |  email  |  password (bcrypt)  |  role  |  created_at', {
+  x: 0.8, y: 5.8, w: 5.5, h: 0.3,
+  fontSize: 9.5, fontFace: 'Consolas', color: LIGHT_GRAY
+});
+slide11.addText('Unique email constraint  •  WAL mode for performance', {
+  x: 0.8, y: 6.15, w: 5.5, h: 0.3,
+  fontSize: 9, fontFace: 'Segoe UI', color: ACCENT
+});
+
+slide11.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  x: 6.8, y: 5.3, w: 5.9, h: 1.6, rectRadius: 0.15,
+  fill: { color: CARD_BG }, line: { color: '3A3A4E', width: 1 }
+});
+slide11.addText('📊 Progress Table', {
+  x: 7.0, y: 5.4, w: 5.5, h: 0.4,
+  fontSize: 12, fontFace: 'Segoe UI', bold: true, color: GREEN
+});
+slide11.addText('id  |  user_id (FK)  |  type  |  score  |  grade  |  metadata  |  created_at', {
+  x: 7.0, y: 5.8, w: 5.5, h: 0.3,
+  fontSize: 9.5, fontFace: 'Consolas', color: LIGHT_GRAY
+});
+slide11.addText('Types: skill, resume, interview, roadmap  •  History for trend charts', {
+  x: 7.0, y: 6.15, w: 5.5, h: 0.3,
+  fontSize: 9, fontFace: 'Segoe UI', color: ACCENT
+});
+
+// ============================================================
+// SLIDE 12: Tech Stack
+// ============================================================
+let slideTS = pptx.addSlide();
+addBg(slideTS);
+addFooter(slideTS, 12, TOTAL_SLIDES);
+
+slideTS.addText('🎨  Tech Stack', {
+  x: 0.8, y: 0.4, w: 11.73, h: 0.8,
+  fontSize: 30, fontFace: 'Segoe UI', bold: true, color: WHITE
+});
+slideTS.addShape(pptx.shapes.RECTANGLE, {
+  x: 0.8, y: 1.15, w: 2, h: 0.04, fill: { color: PRIMARY }
+});
+
 const techStack = [
-  { category: 'Backend', icon: '⚙️', items: ['Node.js (v18+)', 'Express 4.18', 'dotenv', 'cors'], color: GREEN },
+  { category: 'Backend', icon: '⚙️', items: ['Node.js (v18+)', 'Express 4.18', 'better-sqlite3', 'bcryptjs / express-session'], color: GREEN },
   { category: 'AI Engine', icon: '🤖', items: ['Anthropic Claude API', '@anthropic-ai/sdk 0.24', 'claude-sonnet-4-20250514', 'Structured JSON output'], color: YELLOW },
-  { category: 'Frontend', icon: '🖥️', items: ['Vanilla HTML5', 'CSS3 (3500+ lines)', 'JavaScript (ES6+)', 'Chart.js 4.4 (CDN)'], color: PRIMARY },
+  { category: 'Frontend', icon: '🖥️', items: ['Vanilla HTML5 / CSS3', 'JavaScript (ES6+)', 'Chart.js 4.4 (CDN)', '8 feature pages + login'], color: PRIMARY },
   { category: 'Design', icon: '🎨', items: ['Dark theme (#0F0F1A)', 'Primary: #6C63FF', 'Accent: #00D4FF', 'Responsive (3 breakpoints)'], color: ACCENT },
 ];
 
 techStack.forEach((t, i) => {
   const x = 0.6 + i * 3.15;
-  slide10.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  slideTS.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
     x: x, y: 1.5, w: 2.95, h: 4.0, rectRadius: 0.15,
     fill: { color: CARD_BG }, line: { color: t.color, width: 1.5 }
   });
-  slide10.addText(`${t.icon}  ${t.category}`, {
+  slideTS.addText(`${t.icon}  ${t.category}`, {
     x: x + 0.2, y: 1.7, w: 2.55, h: 0.5,
     fontSize: 16, fontFace: 'Segoe UI', bold: true, color: t.color
   });
-  slide10.addShape(pptx.shapes.RECTANGLE, {
+  slideTS.addShape(pptx.shapes.RECTANGLE, {
     x: x + 0.2, y: 2.25, w: 2.55, h: 0.02, fill: { color: '3A3A4E' }
   });
   t.items.forEach((item, j) => {
-    slide10.addText(`▸ ${item}`, {
+    slideTS.addText(`▸ ${item}`, {
       x: x + 0.3, y: 2.45 + j * 0.55, w: 2.4, h: 0.45,
       fontSize: 11, fontFace: 'Segoe UI', color: LIGHT_GRAY
     });
@@ -688,51 +859,51 @@ techStack.forEach((t, i) => {
 });
 
 // Key metrics
-slide10.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+slideTS.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
   x: 0.6, y: 5.8, w: 12.13, h: 1.0, rectRadius: 0.15,
   fill: { color: CARD_BG }, line: { color: '2A2A3E', width: 1 }
 });
 
 const metrics = [
-  { label: 'Total Files', value: '19', color: PRIMARY },
-  { label: 'Lines of Code', value: '7,800+', color: GREEN },
-  { label: 'API Endpoints', value: '9', color: ACCENT },
+  { label: 'Total Files', value: '22+', color: PRIMARY },
+  { label: 'Lines of Code', value: '9,500+', color: GREEN },
+  { label: 'API Endpoints', value: '12', color: ACCENT },
   { label: 'Supported Roles', value: '21', color: YELLOW },
-  { label: 'CSS Lines', value: '3,500+', color: PRIMARY },
+  { label: 'CSS Lines', value: '3,700+', color: PRIMARY },
 ];
 metrics.forEach((m, i) => {
   const x = 0.9 + i * 2.4;
-  slide10.addText(m.value, {
+  slideTS.addText(m.value, {
     x: x, y: 5.9, w: 2.0, h: 0.45,
     fontSize: 22, fontFace: 'Segoe UI', bold: true, color: m.color, align: 'center'
   });
-  slide10.addText(m.label, {
+  slideTS.addText(m.label, {
     x: x, y: 6.35, w: 2.0, h: 0.3,
     fontSize: 10, fontFace: 'Segoe UI', color: LIGHT_GRAY, align: 'center'
   });
 });
 
 // ============================================================
-// SLIDE 11: Key Differentiators
+// SLIDE 13: Key Differentiators
 // ============================================================
-let slide11 = pptx.addSlide();
-addBg(slide11);
-addFooter(slide11, 11, TOTAL_SLIDES);
+let slideDiff = pptx.addSlide();
+addBg(slideDiff);
+addFooter(slideDiff, 13, TOTAL_SLIDES);
 
-slide11.addText('⭐  Why DevGrow Stands Out', {
+slideDiff.addText('⭐  Why DevGrow Stands Out', {
   x: 0.8, y: 0.4, w: 11.73, h: 0.8,
   fontSize: 30, fontFace: 'Segoe UI', bold: true, color: WHITE
 });
-slide11.addShape(pptx.shapes.RECTANGLE, {
+slideDiff.addShape(pptx.shapes.RECTANGLE, {
   x: 0.8, y: 1.15, w: 2, h: 0.04, fill: { color: PRIMARY }
 });
 
 const diffs = [
   { icon: '🎯', title: 'Role-Specific, Not Generic', desc: 'Tailored assessments for 21 roles — from QA Engineer to Product Manager. Every quiz, interview, and roadmap is customized.' },
   { icon: '🤖', title: 'Powered by Claude AI', desc: 'Uses Anthropic\'s Claude for intelligent, context-aware responses — not template-based outputs.' },
-  { icon: '🔄', title: 'Full Career Lifecycle', desc: 'One platform for skills → learning → resume → interview → career path. No need for 5 different tools.' },
-  { icon: '📊', title: 'Data-Driven Progress', desc: 'Chart.js dashboard tracks your growth over time. See trends, not just snapshots.' },
-  { icon: '🎨', title: 'Beautiful Dark UI', desc: '3,500+ lines of polished CSS with scroll animations, SVG graphics, and mobile responsiveness.' },
+  { icon: '🔄', title: 'Full Career Lifecycle', desc: 'Skills → Learning → Resume → Interview → Career Path → Code Debug. One platform, no switching.' },
+  { icon: '�', title: 'AI Code Debugger', desc: 'Unique feature — paste any code and get line-by-line bug analysis with fixes. No other career platform offers this.' },
+  { icon: '🔐', title: 'User Auth & Persistence', desc: 'Login/signup with SQLite — progress is saved per user across sessions. Dashboard loads from server.' },
   { icon: '🆓', title: 'Open Source & Free', desc: 'Fully open-source. Bring your own API key and run locally. No subscriptions, no limits.' },
 ];
 
@@ -742,72 +913,72 @@ diffs.forEach((d, i) => {
   const x = 0.8 + col * 6.2;
   const y = 1.5 + row * 1.85;
 
-  slide11.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  slideDiff.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
     x: x, y: y, w: 5.8, h: 1.6, rectRadius: 0.15,
     fill: { color: CARD_BG }, line: { color: '2A2A3E', width: 1 }
   });
-  slide11.addText(d.icon, {
+  slideDiff.addText(d.icon, {
     x: x + 0.2, y: y + 0.2, w: 0.6, h: 0.5, fontSize: 24
   });
-  slide11.addText(d.title, {
+  slideDiff.addText(d.title, {
     x: x + 0.9, y: y + 0.15, w: 4.6, h: 0.4,
     fontSize: 14, fontFace: 'Segoe UI', bold: true, color: WHITE
   });
-  slide11.addText(d.desc, {
+  slideDiff.addText(d.desc, {
     x: x + 0.9, y: y + 0.55, w: 4.7, h: 0.9,
     fontSize: 10.5, fontFace: 'Segoe UI', color: LIGHT_GRAY, lineSpacingMultiple: 1.2
   });
 });
 
 // ============================================================
-// SLIDE 12: Thank You
+// SLIDE 14: Thank You
 // ============================================================
-let slide12 = pptx.addSlide();
-addBg(slide12);
+let slideTY = pptx.addSlide();
+addBg(slideTY);
 
 // Top gradient bar
-slide12.addShape(pptx.shapes.RECTANGLE, {
+slideTY.addShape(pptx.shapes.RECTANGLE, {
   x: 0, y: 0, w: 13.33, h: 0.06, fill: { color: PRIMARY }
 });
 
-slide12.addText('🙏', {
+slideTY.addText('🙏', {
   x: 4.5, y: 1.5, w: 4.33, h: 1.2,
   fontSize: 60, align: 'center'
 });
 
-slide12.addText('Thank You!', {
+slideTY.addText('Thank You!', {
   x: 2, y: 2.6, w: 9.33, h: 0.9,
   fontSize: 44, fontFace: 'Segoe UI', bold: true, color: WHITE, align: 'center'
 });
 
-slide12.addShape(pptx.shapes.RECTANGLE, {
+slideTY.addShape(pptx.shapes.RECTANGLE, {
   x: 5.5, y: 3.5, w: 2.33, h: 0.04, fill: { color: PRIMARY }
 });
 
-slide12.addText('DevGrow — AI-Powered Career Growth Platform', {
+slideTY.addText('DevGrow — AI-Powered Career Growth Platform', {
   x: 2, y: 3.8, w: 9.33, h: 0.5,
   fontSize: 16, fontFace: 'Segoe UI', color: ACCENT, align: 'center'
 });
 
-slide12.addText('Empowering professionals to grow smarter, faster, and with confidence.', {
+slideTY.addText('Empowering professionals to grow smarter, faster, and with confidence.', {
   x: 2, y: 4.4, w: 9.33, h: 0.5,
   fontSize: 13, fontFace: 'Segoe UI', color: LIGHT_GRAY, align: 'center', italic: true
 });
 
 // Links / Contact
-slide12.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+slideTY.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
   x: 3.5, y: 5.2, w: 6.33, h: 1.4, rectRadius: 0.15,
   fill: { color: CARD_BG }, line: { color: '2A2A3E', width: 1 }
 });
-slide12.addText('🔗  GitHub: github.com/ServerusSnape/TCS-AI-Friday', {
+slideTY.addText('🔗  GitHub: github.com/ServerusSnape/TCS-AI-Friday', {
   x: 3.8, y: 5.35, w: 5.73, h: 0.35,
   fontSize: 12, fontFace: 'Segoe UI', color: LIGHT_GRAY
 });
-slide12.addText('🌐  Live: http://localhost:3000', {
+slideTY.addText('🌐  Live: http://localhost:3000', {
   x: 3.8, y: 5.7, w: 5.73, h: 0.35,
   fontSize: 12, fontFace: 'Segoe UI', color: LIGHT_GRAY
 });
-slide12.addText('👥  Team: TCS AI Friday', {
+slideTY.addText('👥  Team: TCS AI Friday', {
   x: 3.8, y: 6.05, w: 5.73, h: 0.35,
   fontSize: 12, fontFace: 'Segoe UI', color: LIGHT_GRAY
 });

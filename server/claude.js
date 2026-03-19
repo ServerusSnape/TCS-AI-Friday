@@ -1,20 +1,22 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const OpenAI = require('openai');
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 async function askClaude(systemPrompt, userMessage) {
   try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+    const response = await client.chat.completions.create({
+      model: process.env.AI_MODEL || 'gpt-4o',
       max_tokens: 2048,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+      ],
     });
-    return response.content[0].text;
+    return response.choices[0].message.content;
   } catch (error) {
-    console.error('Claude API Error:', error.message);
+    console.error('AI API Error:', error.message);
     throw new Error('Failed to get AI response');
   }
 }

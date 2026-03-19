@@ -269,9 +269,15 @@
     document.getElementById('footer-root').innerHTML = createFooter();
     initNavbar();
 
+    // ===== Load progress data (server-first, fallback localStorage) =====
+    async function loadProgressData() {
+      const serverData = await DevGrowProgress.getFromServer();
+      if (serverData) return serverData;
+      return DevGrowProgress.getAll();
+    }
+
     // ===== Populate Dashboard =====
-    function populateDashboard() {
-      const p = DevGrowProgress.getAll();
+    function populateDashboard(p) {
 
       // Skill
       if (p.skillScore != null) {
@@ -300,8 +306,7 @@
     }
 
     // ===== Charts =====
-    function renderCharts() {
-      const p = DevGrowProgress.getAll();
+    function renderCharts(p) {
       const hasData = p.skillScore != null || p.resumeScore != null || p.interviewCount;
 
       // Chart.js global config for dark theme
@@ -428,8 +433,12 @@
       }
     }
 
-    populateDashboard();
-    renderCharts();
+    // Load data and render
+    (async () => {
+      const p = await loadProgressData();
+      populateDashboard(p);
+      renderCharts(p);
+    })();
   </script>
 </body>
 </html>

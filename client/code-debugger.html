@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Debugger — DevGrow</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <style>
+    /* ===== Code Debugger Styles ===== */
+    .debugger-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      min-height: 520px;
+    }
+
+    .debugger-panel {
+      background: rgba(15, 15, 30, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(20, 20, 40, 0.9);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-header h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .panel-header .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .panel-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Code Editor Area */
+    .code-editor-wrap {
+      flex: 1;
+      display: flex;
+      overflow: auto;
+      position: relative;
+    }
+
+    .line-numbers {
+      padding: 16px 0;
+      background: rgba(10, 10, 25, 0.6);
+      color: var(--text-muted);
+      font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      text-align: right;
+      user-select: none;
+      min-width: 48px;
+      border-right: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .line-numbers .line-num {
+      padding: 0 12px 0 8px;
+      display: block;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .line-numbers .line-num:hover {
+      color: var(--primary);
+    }
+
+    .line-numbers .line-num.has-error {
+      color: #ff5f56;
+      font-weight: 700;
+      background: rgba(255, 95, 86, 0.08);
+    }
+
+    .line-numbers .line-num.has-warning {
+      color: #ffbd2e;
+      font-weight: 700;
+      background: rgba(255, 189, 46, 0.08);
+    }
+
+    .line-numbers .line-num.has-info {
+      color: #00d4ff;
+      font-weight: 600;
+      background: rgba(0, 212, 255, 0.05);
+    }
+
+    .code-textarea {
+      flex: 1;
+      background: transparent;
+      color: #e4e4f0;
+      font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 16px;
+      border: none;
+      outline: none;
+      resize: none;
+      tab-size: 2;
+      white-space: pre;
+      overflow-x: auto;
+      min-height: 400px;
+      width: 100%;
+    }
+
+    .code-textarea::placeholder {
+      color: rgba(160, 160, 190, 0.4);
+    }
+
+    /* Language selector & Controls */
+    .debugger-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .lang-select {
+      background: rgba(20, 20, 42, 0.9);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .lang-select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .lang-select option {
+      background: #141428;
+      color: #e4e4f0;
+    }
+
+    .btn-debug {
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 28px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .btn-debug:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-debug:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-clear {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-clear:hover {
+      border-color: #ff5f56;
+      color: #ff5f56;
+    }
+
+    /* Results Panel */
+    .results-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .results-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .results-empty .empty-icon {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .results-empty h3 {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .results-empty p {
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    /* Score Header */
+    .score-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: rgba(15, 15, 35, 0.6);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .score-ring {
+      width: 80px;
+      height: 80px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-ring-bg {
+      fill: none;
+      stroke: rgba(42, 42, 66, 0.5);
+      stroke-width: 6;
+    }
+
+    .score-ring-fill {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease;
+    }
+
+    .score-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .score-info h3 {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .score-info p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .severity-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .severity-badge.critical { background: rgba(255, 95, 86, 0.15); color: #ff5f56; }
+    .severity-badge.warning { background: rgba(255, 189, 46, 0.15); color: #ffbd2e; }
+    .severity-badge.info { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+    .severity-badge.clean { background: rgba(39, 201, 63, 0.15); color: #27c93f; }
+
+    /* Issue count tabs */
+    .issue-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 16px;
+      background: rgba(15, 15, 35, 0.4);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .issue-tab {
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+
+    .issue-tab:hover { color: var(--text-primary); }
+    .issue-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .issue-tab .count {
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--primary);
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+    }
+
+    .issue-tab.error-tab .count { background: rgba(255, 95, 86, 0.15); color: #ff5f56; }
+    .issue-tab.warning-tab .count { background: rgba(255, 189, 46, 0.15); color: #ffbd2e; }
+    .issue-tab.info-tab .count { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+
+    /* Issue Cards */
+    .issues-list {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .issue-card {
+      background: rgba(20, 20, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+
+    .issue-card:hover {
+      background: rgba(25, 25, 50, 0.8);
+      transform: translateX(4px);
+    }
+
+    .issue-card.error { border-left-color: #ff5f56; }
+    .issue-card.warning { border-left-color: #ffbd2e; }
+    .issue-card.info { border-left-color: #00d4ff; }
+    .issue-card.style { border-left-color: #a78bfa; }
+
+    .issue-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .issue-card-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .issue-line-badge {
+      background: rgba(108, 99, 255, 0.12);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .issue-card-msg {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .issue-card-fix {
+      background: rgba(39, 201, 63, 0.06);
+      border: 1px solid rgba(39, 201, 63, 0.15);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .issue-card-fix-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #27c93f;
+      margin-bottom: 6px;
+    }
+
+    .issue-card-fix code {
+      display: block;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      color: #a8ffc4;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Category tag */
+    .issue-category {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(108, 99, 255, 0.1);
+      color: var(--primary);
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    /* Improvements section */
+    .improvements-section {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .improvements-section h4 {
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .improvement-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(108, 99, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(108, 99, 255, 0.08);
+    }
+
+    .improvement-type {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+
+    .improvement-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Fixed code section */
+    .fixed-code-section {
+      border-top: 1px solid var(--border-color);
+    }
+
+    .fixed-code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .fixed-code-header:hover {
+      background: rgba(20, 20, 42, 0.5);
+    }
+
+    .fixed-code-header h4 {
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+    }
+
+    .fixed-code-body {
+      display: none;
+      padding: 0 16px 16px;
+    }
+
+    .fixed-code-body.open {
+      display: block;
+    }
+
+    .fixed-code-block {
+      background: rgba(10, 10, 25, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .fixed-code-block pre {
+      padding: 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      color: #a8ffc4;
+      overflow-x: auto;
+      margin: 0;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .copy-btn:hover {
+      background: rgba(108, 99, 255, 0.3);
+    }
+
+    /* Loading animation */
+    .debug-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 20px;
+      padding: 40px;
+    }
+
+    .debug-scanner {
+      width: 200px;
+      height: 120px;
+      position: relative;
+      background: rgba(15, 15, 30, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .debug-scanner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+      animation: scanLine 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scanLine {
+      0% { top: 0; }
+      50% { top: calc(100% - 3px); }
+      100% { top: 0; }
+    }
+
+    .debug-scanner .fake-lines {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .debug-scanner .fake-line {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(108, 99, 255, 0.12);
+      animation: fakePulse 2s ease-in-out infinite;
+    }
+
+    .debug-scanner .fake-line:nth-child(1) { width: 70%; animation-delay: 0s; }
+    .debug-scanner .fake-line:nth-child(2) { width: 90%; animation-delay: 0.2s; }
+    .debug-scanner .fake-line:nth-child(3) { width: 50%; animation-delay: 0.4s; }
+    .debug-scanner .fake-line:nth-child(4) { width: 80%; animation-delay: 0.6s; }
+    .debug-scanner .fake-line:nth-child(5) { width: 60%; animation-delay: 0.8s; }
+    .debug-scanner .fake-line:nth-child(6) { width: 75%; animation-delay: 1s; }
+
+    @keyframes fakePulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    .debug-loading p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .debug-loading .loading-status {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.85rem;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Code lines highlighting in editor */
+    .code-line-highlight {
+      position: absolute;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .code-line-highlight.error {
+      background: rgba(255, 95, 86, 0.06);
+      border-left: 2px solid #ff5f56;
+    }
+
+    .code-line-highlight.warning {
+      background: rgba(255, 189, 46, 0.06);
+      border-left: 2px solid #ffbd2e;
+    }
+
+    .code-line-highlight.info {
+      background: rgba(0, 212, 255, 0.04);
+      border-left: 2px solid #00d4ff;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      padding: 10px 16px;
+      background: rgba(10, 10, 25, 0.4);
+      border-top: 1px solid var(--border-color);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .stats-bar span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .debugger-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .debugger-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-debug {
+        justify-content: center;
+      }
+      .score-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>🐛 <span class="gradient-text">AI Code Debugger</span></h1>
+      <p>Paste your code and let AI analyze it line-by-line — instantly find bugs, security issues, performance problems, and get corrected code with detailed explanations.</p>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Controls -->
+      <div class="debugger-controls">
+        <select class="lang-select" id="langSelect">
+          <option value="auto">🔍 Auto-detect</option>
+          <optgroup label="Popular">
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="c++">C++</option>
+            <option value="c#">C#</option>
+            <option value="go">Go</option>
+            <option value="rust">Rust</option>
+          </optgroup>
+          <optgroup label="Web">
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="php">PHP</option>
+            <option value="ruby">Ruby</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="swift">Swift</option>
+            <option value="kotlin">Kotlin</option>
+            <option value="sql">SQL</option>
+            <option value="bash">Bash / Shell</option>
+            <option value="r">R</option>
+            <option value="scala">Scala</option>
+          </optgroup>
+        </select>
+        <button class="btn-debug" id="debugBtn" onclick="analyzeCode()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Analyze Code
+        </button>
+        <button class="btn-clear" onclick="clearAll()">✕ Clear</button>
+        <button class="btn-clear" onclick="loadExample()">📋 Load Example</button>
+      </div>
+
+      <!-- Two-panel layout -->
+      <div class="debugger-layout">
+
+        <!-- Left: Code Editor -->
+        <div class="debugger-panel" id="editorPanel">
+          <div class="panel-header">
+            <h3><span class="panel-dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span> Code Editor</h3>
+            <span style="font-size:0.75rem;color:var(--text-muted);" id="lineCountDisplay">0 lines</span>
+          </div>
+          <div class="code-editor-wrap" id="editorWrap">
+            <div class="line-numbers" id="lineNumbers"></div>
+            <textarea class="code-textarea" id="codeInput" placeholder="// Paste your code here...&#10;// The AI will analyze every line for issues.&#10;&#10;function example() {&#10;  // Try pasting buggy code to see it in action!&#10;}" spellcheck="false"></textarea>
+          </div>
+          <div class="stats-bar" id="statsBar">
+            <span>📄 <span id="statLines">0</span> lines</span>
+            <span>📝 <span id="statChars">0</span> chars</span>
+            <span>🔤 <span id="statLang">—</span></span>
+          </div>
+        </div>
+
+        <!-- Right: Results Panel -->
+        <div class="debugger-panel" id="resultsPanel">
+          <div class="panel-header">
+            <h3>🔍 Analysis Results</h3>
+            <span style="font-size:0.75rem;color:var(--text-muted);" id="issueCountDisplay"></span>
+          </div>
+          <div class="results-body" id="resultsBody">
+            <div class="results-empty">
+              <div class="empty-icon">🐛</div>
+              <h3>Paste code & hit Analyze</h3>
+              <p>The AI will scan every line of your code for bugs, security issues, performance problems, and bad practices — then show you exactly what to fix.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('code-debugger');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    const codeInput = document.getElementById('codeInput');
+    const lineNumbers = document.getElementById('lineNumbers');
+    let analysisData = null;
+
+    // ===== Sync Line Numbers =====
+    function updateLineNumbers() {
+      const lines = codeInput.value.split('\n');
+      const count = lines.length;
+      let html = '';
+      for (let i = 1; i <= count; i++) {
+        let cls = 'line-num';
+        if (analysisData && analysisData.issues) {
+          const issue = analysisData.issues.find(iss => iss.line === i);
+          if (issue) {
+            if (issue.severity === 'error') cls += ' has-error';
+            else if (issue.severity === 'warning') cls += ' has-warning';
+            else cls += ' has-info';
+          }
+        }
+        html += `<span class="${cls}" data-line="${i}" onclick="scrollToIssue(${i})">${i}</span>\n`;
+      }
+      lineNumbers.innerHTML = html;
+      document.getElementById('statLines').textContent = count;
+      document.getElementById('statChars').textContent = codeInput.value.length;
+      document.getElementById('lineCountDisplay').textContent = count + ' lines';
+    }
+
+    codeInput.addEventListener('input', updateLineNumbers);
+    codeInput.addEventListener('scroll', () => {
+      lineNumbers.scrollTop = codeInput.scrollTop;
+    });
+
+    // Handle Tab key in textarea
+    codeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = codeInput.selectionStart;
+        const end = codeInput.selectionEnd;
+        codeInput.value = codeInput.value.substring(0, start) + '  ' + codeInput.value.substring(end);
+        codeInput.selectionStart = codeInput.selectionEnd = start + 2;
+        updateLineNumbers();
+      }
+    });
+
+    updateLineNumbers();
+
+    // ===== Analyze Code =====
+    async function analyzeCode() {
+      const code = codeInput.value.trim();
+      if (!code) {
+        showToast('Please paste some code first!', 'error');
+        return;
+      }
+
+      const lang = document.getElementById('langSelect').value;
+      const btn = document.getElementById('debugBtn');
+      const resultsBody = document.getElementById('resultsBody');
+
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Analyzing...`;
+
+      // Show loading
+      resultsBody.innerHTML = `
+        <div class="debug-loading">
+          <div class="debug-scanner">
+            <div class="fake-lines">
+              <div class="fake-line"></div>
+              <div class="fake-line"></div>
+              <div class="fake-line"></div>
+              <div class="fake-line"></div>
+              <div class="fake-line"></div>
+              <div class="fake-line"></div>
+            </div>
+          </div>
+          <p class="loading-status">🔍 Scanning your code line by line...</p>
+          <p>AI is analyzing for bugs, security issues & improvements</p>
+        </div>`;
+
+      try {
+        const res = await fetch('/api/debugger/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, language: lang === 'auto' ? '' : lang }),
+        });
+
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error);
+
+        analysisData = result.data;
+        document.getElementById('statLang').textContent = analysisData.language || '—';
+        updateLineNumbers();
+        renderResults(analysisData);
+      } catch (err) {
+        resultsBody.innerHTML = `
+          <div class="results-empty">
+            <div class="empty-icon">⚠️</div>
+            <h3>Analysis Failed</h3>
+            <p>${err.message || 'Something went wrong. Please try again.'}</p>
+          </div>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Analyze Code`;
+      }
+    }
+
+    // ===== Render Results =====
+    function renderResults(data) {
+      const resultsBody = document.getElementById('resultsBody');
+      const issues = data.issues || [];
+      const improvements = data.improvements || [];
+
+      const errors = issues.filter(i => i.severity === 'error');
+      const warnings = issues.filter(i => i.severity === 'warning');
+      const infos = issues.filter(i => i.severity === 'info' || i.severity === 'style');
+
+      document.getElementById('issueCountDisplay').textContent = issues.length + ' issues found';
+
+      // Score color
+      let scoreColor = '#27c93f';
+      if (data.score < 50) scoreColor = '#ff5f56';
+      else if (data.score < 75) scoreColor = '#ffbd2e';
+      else if (data.score < 90) scoreColor = '#00d4ff';
+
+      const circumference = 2 * Math.PI * 34;
+      const offset = circumference - (data.score / 100) * circumference;
+
+      let html = '';
+
+      // Score header
+      html += `
+        <div class="score-header">
+          <div class="score-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle class="score-ring-bg" cx="40" cy="40" r="34"/>
+              <circle class="score-ring-fill" cx="40" cy="40" r="34"
+                stroke="${scoreColor}"
+                stroke-dasharray="${circumference}"
+                stroke-dashoffset="${offset}"/>
+            </svg>
+            <div class="score-ring-text">${data.score}</div>
+          </div>
+          <div class="score-info">
+            <h3>Code Quality Score <span class="severity-badge ${data.overallSeverity}">${data.overallSeverity}</span></h3>
+            <p>${data.summary || ''}</p>
+          </div>
+        </div>`;
+
+      // Issue tabs
+      html += `
+        <div class="issue-tabs">
+          <button class="issue-tab active" onclick="filterIssues('all', this)">
+            All <span class="count">${issues.length}</span>
+          </button>
+          <button class="issue-tab error-tab" onclick="filterIssues('error', this)">
+            ❌ Errors <span class="count">${errors.length}</span>
+          </button>
+          <button class="issue-tab warning-tab" onclick="filterIssues('warning', this)">
+            ⚠️ Warnings <span class="count">${warnings.length}</span>
+          </button>
+          <button class="issue-tab info-tab" onclick="filterIssues('info', this)">
+            💡 Info <span class="count">${infos.length}</span>
+          </button>
+        </div>`;
+
+      // Issues list
+      if (issues.length === 0) {
+        html += `
+          <div class="results-empty" style="padding:40px;">
+            <div class="empty-icon">✅</div>
+            <h3>No Issues Found!</h3>
+            <p>Your code looks clean. Great job!</p>
+          </div>`;
+      } else {
+        html += `<div class="issues-list" id="issuesList">`;
+        issues.forEach((issue, idx) => {
+          html += renderIssueCard(issue, idx);
+        });
+        html += `</div>`;
+      }
+
+      // Improvements
+      if (improvements.length > 0) {
+        html += `<div class="improvements-section">
+          <h4>💡 Improvement Suggestions</h4>`;
+        improvements.forEach(imp => {
+          html += `
+            <div class="improvement-item">
+              <span class="improvement-type">${imp.type}</span>
+              <span class="improvement-text">${imp.suggestion}</span>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // Fixed code
+      if (data.fixedCode) {
+        html += `
+          <div class="fixed-code-section">
+            <div class="fixed-code-header" onclick="toggleFixedCode()">
+              <h4>✅ Fixed Code</h4>
+              <span style="color:var(--text-muted);font-size:0.8rem;" id="fixedToggleIcon">▼ Show</span>
+            </div>
+            <div class="fixed-code-body" id="fixedCodeBody">
+              <div class="fixed-code-block">
+                <button class="copy-btn" onclick="copyFixed()">📋 Copy</button>
+                <pre>${escapeHtml(data.fixedCode)}</pre>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      resultsBody.innerHTML = html;
+
+      // Animate score ring
+      setTimeout(() => {
+        const ring = resultsBody.querySelector('.score-ring-fill');
+        if (ring) ring.style.strokeDashoffset = offset;
+      }, 100);
+    }
+
+    function renderIssueCard(issue, idx) {
+      const severityIcon = {
+        error: '❌',
+        warning: '⚠️',
+        info: '💡',
+        style: '🎨'
+      };
+      return `
+        <div class="issue-card ${issue.severity}" data-severity="${issue.severity}" data-line="${issue.line}" onclick="highlightLine(${issue.line})">
+          <div class="issue-card-header">
+            <span class="issue-card-title">${severityIcon[issue.severity] || '🔍'} ${issue.title}</span>
+            <span class="issue-line-badge">Line ${issue.line}${issue.endLine && issue.endLine !== issue.line ? '-' + issue.endLine : ''}</span>
+          </div>
+          <span class="issue-category">${issue.category}</span>
+          <div class="issue-card-msg">${issue.message}</div>
+          ${issue.fixedCode ? `
+          <div class="issue-card-fix">
+            <div class="issue-card-fix-label">✅ Suggested Fix</div>
+            <code>${escapeHtml(issue.fixedCode)}</code>
+          </div>` : ''}
+        </div>`;
+    }
+
+    // ===== Filter Issues =====
+    function filterIssues(filter, tabEl) {
+      document.querySelectorAll('.issue-tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+
+      document.querySelectorAll('.issue-card').forEach(card => {
+        const sev = card.dataset.severity;
+        if (filter === 'all') {
+          card.style.display = '';
+        } else if (filter === 'info') {
+          card.style.display = (sev === 'info' || sev === 'style') ? '' : 'none';
+        } else {
+          card.style.display = sev === filter ? '' : 'none';
+        }
+      });
+    }
+
+    // ===== Highlight Line =====
+    function highlightLine(lineNum) {
+      // Scroll to line in textarea
+      const lineHeight = 22.1; // approx line height in px
+      const scrollPos = (lineNum - 1) * lineHeight;
+      codeInput.scrollTop = scrollPos - 60;
+
+      // Flash the line number
+      const lineEl = lineNumbers.querySelector(`[data-line="${lineNum}"]`);
+      if (lineEl) {
+        lineEl.style.transition = 'none';
+        lineEl.style.background = 'rgba(108, 99, 255, 0.3)';
+        lineEl.style.color = '#fff';
+        setTimeout(() => {
+          lineEl.style.transition = 'all 0.5s';
+          lineEl.style.background = '';
+          lineEl.style.color = '';
+        }, 1200);
+      }
+    }
+
+    function scrollToIssue(lineNum) {
+      if (!analysisData || !analysisData.issues) return;
+      const issue = analysisData.issues.find(i => i.line === lineNum);
+      if (!issue) return;
+
+      // Find the matching card in results
+      const cards = document.querySelectorAll('.issue-card');
+      cards.forEach(card => {
+        if (parseInt(card.dataset.line) === lineNum) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.style.transition = 'none';
+          card.style.background = 'rgba(108, 99, 255, 0.15)';
+          setTimeout(() => {
+            card.style.transition = 'all 0.5s';
+            card.style.background = '';
+          }, 1500);
+        }
+      });
+    }
+
+    // ===== Toggle Fixed Code =====
+    function toggleFixedCode() {
+      const body = document.getElementById('fixedCodeBody');
+      const icon = document.getElementById('fixedToggleIcon');
+      body.classList.toggle('open');
+      icon.textContent = body.classList.contains('open') ? '▲ Hide' : '▼ Show';
+    }
+
+    // ===== Copy Fixed Code =====
+    function copyFixed() {
+      if (analysisData && analysisData.fixedCode) {
+        navigator.clipboard.writeText(analysisData.fixedCode).then(() => {
+          showToast('Fixed code copied to clipboard!', 'success');
+        });
+      }
+    }
+
+    // ===== Clear =====
+    function clearAll() {
+      codeInput.value = '';
+      analysisData = null;
+      updateLineNumbers();
+      document.getElementById('resultsBody').innerHTML = `
+        <div class="results-empty">
+          <div class="empty-icon">🐛</div>
+          <h3>Paste code & hit Analyze</h3>
+          <p>The AI will scan every line of your code for bugs, security issues, performance problems, and bad practices — then show you exactly what to fix.</p>
+        </div>`;
+      document.getElementById('issueCountDisplay').textContent = '';
+      document.getElementById('statLang').textContent = '—';
+    }
+
+    // ===== Load Example =====
+    function loadExample() {
+      codeInput.value = `function fetchUserData(userId) {
+  // Bug: no null check
+  var data = fetch("/api/users/" + userId);
+  
+  // Security: SQL injection risk
+  var query = "SELECT * FROM users WHERE id = " + userId;
+  
+  // Memory leak: event listener never removed
+  document.addEventListener("click", function() {
+    console.log("clicked");
+  });
+  
+  // Logic error: comparing string to number
+  if (userId == "0") {
+    return null;
+  }
+  
+  // Performance: sync operation in loop
+  for (var i = 0; i < 10000; i++) {
+    localStorage.setItem("item_" + i, JSON.stringify(data));
+  }
+  
+  // Missing await on async function
+  const response = fetch("/api/process");
+  
+  // Unused variable
+  let temp = 42;
+  
+  // Type coercion issue
+  if ([] == false) {
+    console.log("this runs unexpectedly");
+  }
+  
+  return data;
+}
+
+// Calling without error handling
+const result = fetchUserData();
+console.log(result.name);`;
+      updateLineNumbers();
+      document.getElementById('langSelect').value = 'javascript';
+    }
+
+    // ===== Utility =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        analyzeCode();
+      }
+    });
+  </script>
+</body>
+</html>

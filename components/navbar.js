@@ -7,6 +7,7 @@ function createNavbar(activePage = '') {
     { href: '/resume-analyzer', label: 'Resume Analyzer', id: 'resume-analyzer' },
     { href: '/mock-interview', label: 'Mock Interview', id: 'mock-interview' },
     { href: '/career-path', label: 'Career Path', id: 'career-path' },
+    { href: '/code-debugger', label: 'Code Debugger', id: 'code-debugger' },
   ];
 
   const linksHTML = navLinks
@@ -26,6 +27,9 @@ function createNavbar(activePage = '') {
       <ul class="nav-links" id="navLinks">
         ${linksHTML}
       </ul>
+      <div class="nav-auth" id="navAuth">
+        <a href="/login" class="btn btn-secondary btn-sm" id="navLoginBtn">Sign In</a>
+      </div>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
@@ -52,6 +56,7 @@ function createFooter() {
         <a href="/resume-analyzer">Resume Analyzer</a>
         <a href="/mock-interview">Mock Interview</a>
         <a href="/career-path">Career Path</a>
+        <a href="/code-debugger">Code Debugger</a>
       </div>
       <div class="footer-col">
         <h4>Resources</h4>
@@ -107,6 +112,64 @@ function initNavbar() {
 
   // Scroll reveal
   initScrollReveal();
+
+  // Auth state — update navbar with user info
+  initAuthState();
+}
+
+// Check login state and update navbar
+async function initAuthState() {
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    const navAuth = document.getElementById('navAuth');
+    if (!navAuth) return;
+
+    if (data.success && data.user) {
+      // User is logged in
+      window.__devgrowUser = data.user;
+      const initials = data.user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      navAuth.innerHTML = `
+        <div class="nav-user-menu" id="navUserMenu">
+          <button class="nav-user-btn" onclick="document.getElementById('navUserMenu').classList.toggle('open')">
+            <span class="nav-user-avatar">${initials}</span>
+            <span class="nav-user-name">${data.user.name.split(' ')[0]}</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L2 4h8z"/></svg>
+          </button>
+          <div class="nav-user-dropdown">
+            <div class="nav-user-info">
+              <span class="nav-user-fullname">${data.user.name}</span>
+              <span class="nav-user-email">${data.user.email}</span>
+            </div>
+            <div class="nav-user-divider"></div>
+            <button class="nav-user-logout" onclick="handleLogout()">🚪 Sign Out</button>
+          </div>
+        </div>`;
+
+      // Close dropdown on click outside
+      document.addEventListener('click', (e) => {
+        const menu = document.getElementById('navUserMenu');
+        if (menu && !menu.contains(e.target)) {
+          menu.classList.remove('open');
+        }
+      });
+    } else {
+      window.__devgrowUser = null;
+    }
+  } catch (e) {
+    console.error('Auth check failed:', e);
+  }
+}
+
+// Logout handler
+async function handleLogout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.__devgrowUser = null;
+    window.location.href = '/login';
+  } catch (e) {
+    window.location.href = '/login';
+  }
 }
 
 // Scroll Reveal — reveal elements with class "reveal" on scroll
@@ -165,7 +228,7 @@ function showLoading(container) {
     </div>`;
 }
 
-// ===== Progress Tracker (localStorage) =====
+// ===== Progress Tracker (Server + localStorage fallback) =====
 const DevGrowProgress = {
   _key: 'devgrow_progress',
 
@@ -179,17 +242,30 @@ const DevGrowProgress = {
     localStorage.setItem(this._key, JSON.stringify(data));
   },
 
+  // Save to server if logged in
+  async _saveToServer(type, score, grade, metadata) {
+    try {
+      if (window.__devgrowUser) {
+        await fetch('/api/auth/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, score, grade, metadata })
+        });
+      }
+    } catch (e) { console.error('Server save failed:', e); }
+  },
+
   // Skill Assessment
   saveSkillScore(score, grade) {
     const data = this._get();
     data.skillScore = score;
     data.skillGrade = grade;
     data.skillDate = new Date().toISOString();
-    // Track history
     if (!data.skillHistory) data.skillHistory = [];
     data.skillHistory.push({ score, date: data.skillDate });
     if (data.skillHistory.length > 10) data.skillHistory = data.skillHistory.slice(-10);
     this._set(data);
+    this._saveToServer('skill', score, grade);
   },
 
   // Resume
@@ -201,6 +277,7 @@ const DevGrowProgress = {
     data.resumeHistory.push({ score, date: data.resumeDate });
     if (data.resumeHistory.length > 10) data.resumeHistory = data.resumeHistory.slice(-10);
     this._set(data);
+    this._saveToServer('resume', score);
   },
 
   // Interview
@@ -213,6 +290,7 @@ const DevGrowProgress = {
     data.interviewHistory.push({ score: overallScore, date: data.interviewDate });
     if (data.interviewHistory.length > 10) data.interviewHistory = data.interviewHistory.slice(-10);
     this._set(data);
+    this._saveToServer('interview', overallScore);
   },
 
   // Roadmap
@@ -221,6 +299,19 @@ const DevGrowProgress = {
     data.roadmapPercent = percent;
     data.roadmapDate = new Date().toISOString();
     this._set(data);
+    this._saveToServer('roadmap', percent);
+  },
+
+  // Get all — from server if logged in, otherwise localStorage
+  async getFromServer() {
+    try {
+      if (window.__devgrowUser) {
+        const res = await fetch('/api/auth/progress');
+        const data = await res.json();
+        if (data.success) return data.progress;
+      }
+    } catch (e) { console.error('Server fetch failed:', e); }
+    return null;
   },
 
   getAll() {
