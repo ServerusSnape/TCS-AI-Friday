@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start DevGrow Server",
+			"type": "shell",
+			"command": "$env:Path = 'C:\\Program Files\\nodejs;' + $env:Path; node server/index.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

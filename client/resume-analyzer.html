@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Analyzer — DevGrow</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>📄 <span class="gradient-text">Resume Analyzer & Optimizer</span></h1>
+      <p>Paste your resume and a target job description — get ATS scoring, keyword gaps, and AI-rewritten bullet points.</p>
+    </div>
+
+    <div class="page-content" style="max-width:1200px;">
+
+      <!-- Input Form -->
+      <div id="formPanel">
+        <form id="resumeForm">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="form-group">
+              <label>📝 Paste Your Resume</label>
+              <textarea class="form-control" id="resumeText" rows="16" placeholder="JOHN DOE
+Full-Stack Developer | john@email.com | github.com/johndoe
+
+SUMMARY
+Passionate developer with 3+ years of experience building web applications.
+
+EXPERIENCE
+Software Engineer — TechCorp (2023–Present)
+- Developed RESTful APIs using Node.js and Express
+- Improved page load time by 40% through code optimization
+- Collaborated with design team on UI/UX improvements
+
+Junior Developer — StartupXYZ (2021–2023)
+- Built frontend components with React and TypeScript
+- Wrote unit tests achieving 85% code coverage
+
+SKILLS
+JavaScript, TypeScript, React, Node.js, PostgreSQL, Docker, Git, AWS
+
+EDUCATION
+B.Tech Computer Science — XYZ University (2021)
+
+PROJECTS
+TaskFlow — A Kanban-style project management app built with React and Firebase"></textarea>
+            </div>
+            <div class="form-group">
+              <label>🎯 Paste Target Job Description</label>
+              <textarea class="form-control" id="jobDescription" rows="16" placeholder="Paste the full job description here...
+
+Example:
+Senior Full-Stack Developer — Acme Corp
+
+We are looking for a Senior Full-Stack Developer to join our engineering team.
+
+Requirements:
+- 4+ years of experience with JavaScript/TypeScript
+- Proficiency in React, Next.js, and Node.js
+- Experience with cloud services (AWS/GCP)
+- Strong understanding of CI/CD pipelines
+- Experience with microservices architecture
+- Proficiency in SQL and NoSQL databases
+- Excellent problem-solving and communication skills
+
+Nice to have:
+- Experience with Kubernetes and Docker
+- Knowledge of GraphQL
+- Contributions to open-source projects"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Target Role (if no JD provided)</label>
+            <input type="text" class="form-control" id="targetRole" placeholder="e.g. Senior Full-Stack Developer" value="" />
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;">� Analyze & Optimize</button>
+        </form>
+      </div>
+
+      <!-- Loading -->
+      <div id="loadingPanel" style="display:none;">
+        <div class="loading" style="padding:4rem 2rem;">
+          <div class="loading-spinner"></div>
+          <span>AI is analyzing your resume against the job description...</span>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="resultPanel" style="display:none;"></div>
+
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+
+  <!-- SVG gradient for gauge -->
+  <svg width="0" height="0" style="position:absolute;">
+    <defs>
+      <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ef4444"/>
+        <stop offset="40%" stop-color="#f59e0b"/>
+        <stop offset="70%" stop-color="#3b82f6"/>
+        <stop offset="100%" stop-color="#10b981"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('resume-analyzer');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    let savedResumeText = '';
+
+    function showPanel(id) {
+      ['formPanel','loadingPanel','resultPanel'].forEach(p => {
+        document.getElementById(p).style.display = p === id ? 'block' : 'none';
+      });
+    }
+
+    document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resumeText = document.getElementById('resumeText').value.trim();
+      if (!resumeText) { alert('Please paste your resume text.'); return; }
+
+      savedResumeText = resumeText;
+      showPanel('loadingPanel');
+
+      const res = await apiPost('/api/resume/analyze', {
+        resumeText,
+        jobDescription: document.getElementById('jobDescription').value.trim(),
+        targetRole: document.getElementById('targetRole').value.trim(),
+      });
+
+      if (res.success && res.analysis) {
+        renderResults(res.analysis);
+        showPanel('resultPanel');
+        window.scrollTo({ top: 200, behavior: 'smooth' });
+      } else {
+        alert('Analysis failed: ' + (res.error || 'Unknown error'));
+        showPanel('formPanel');
+      }
+    });
+
+    function renderResults(a) {
+      // Verdict class
+      const verdictClass = (a.atsVerdict || '').toLowerCase().replace(/\s+/g, '-');
+
+      // ATS gauge: half-circle arc
+      const score = a.atsScore || 0;
+      // Save to progress dashboard
+      if (typeof DevGrowProgress !== 'undefined') {
+        DevGrowProgress.saveResumeScore(score);
+      }
+      const arcLen = 251; // half-circle circumference for r=80
+      const dashOff = arcLen - (arcLen * score / 100);
+
+      // Section scores
+      const sectionsHTML = (a.sectionScores || []).map(s => `
+        <div>
+          <div class="section-score-row">
+            <span class="section-score-name">${s.section}</span>
+            <div class="section-score-bar-wrap">
+              <div class="section-score-bar ${s.status}" style="width:${s.score}%"></div>
+            </div>
+            <span class="section-score-val">${s.score}</span>
+          </div>
+          ${s.feedback ? `<div class="section-feedback">${s.feedback}</div>` : ''}
+        </div>
+      `).join('');
+
+      // Missing keywords
+      const kwHTML = (a.missingKeywords || []).map(k => {
+        const cls = (k.importance || 'important').toLowerCase().replace(/ /g, '-');
+        return `<span class="keyword-chip ${cls}">${k.keyword}</span>`;
+      }).join('');
+
+      // Weak sections
+      const weakHTML = (a.weakSections || []).map(w => `
+        <div class="weak-section-item">
+          <h4>${w.section}</h4>
+          <div class="weak-section-issue">${w.issue}</div>
+          <div class="weak-section-fix">\u2705 ${w.suggestion}</div>
+        </div>
+      `).join('');
+
+      // Rewritten bullets
+      const bulletsHTML = (a.rewrittenBullets || []).map(b => `
+        <div class="bullet-rewrite">
+          <span class="bullet-label before">Before</span>
+          <div class="bullet-text original">${b.original}</div>
+          <div class="bullet-arrow">\u2B07</div>
+          <span class="bullet-label after">After</span>
+          <div class="bullet-text improved">${b.improved}</div>
+          <div class="bullet-reason">\u{1F4A1} ${b.reason}</div>
+        </div>
+      `).join('');
+
+      // Recommendations
+      const recsHTML = (a.recommendations || []).map(r => `
+        <div class="rec-card">
+          <div class="rec-header">
+            <span class="rec-title">${r.title}</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              ${r.category ? `<span style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;">${r.category}</span>` : ''}
+              <span class="rec-priority ${r.priority}">${r.priority}</span>
+            </div>
+          </div>
+          <div class="rec-desc">${r.description}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('resultPanel').innerHTML = `
+        <div>
+          <!-- ATS Score Header -->
+          <div class="ats-header">
+            <div class="ats-gauge">
+              <svg viewBox="0 0 180 180">
+                <path class="ats-gauge-bg"
+                  d="M 20 100 A 80 80 0 0 1 160 100"
+                  fill="none" />
+                <path class="ats-gauge-fill"
+                  d="M 20 100 A 80 80 0 0 1 160 100"
+                  fill="none"
+                  stroke="url(#gaugeGrad)"
+                  stroke-dasharray="${arcLen}"
+                  stroke-dashoffset="${dashOff}" />
+              </svg>
+              <div class="ats-score-display">
+                <div class="ats-score-number" id="atsAnimated">0</div>
+                <div class="ats-score-label">ATS Score</div>
+              </div>
+            </div>
+            <div class="ats-verdict ${verdictClass}">${a.atsVerdict || 'N/A'}</div>
+            <p class="ats-summary-text">${a.atsSummary || ''}</p>
+          </div>
+
+          <!-- Split Layout -->
+          <div class="resume-split">
+
+            <!-- LEFT: Original Resume + Section Scores -->
+            <div class="resume-left">
+              <div class="resume-panel">
+                <h3>\u{1F4C4} Your Resume</h3>
+                <div class="resume-original">${escapeHtml(savedResumeText)}</div>
+              </div>
+
+              <div class="resume-panel">
+                <h3>\u{1F4CA} Section Scores</h3>
+                ${sectionsHTML}
+              </div>
+
+              <div class="resume-panel">
+                <h3>\u26A0\uFE0F Weak Sections</h3>
+                ${weakHTML || '<p style="color:var(--text-muted);font-size:0.9rem;">No major weak sections found — great job!</p>'}
+              </div>
+            </div>
+
+            <!-- RIGHT: AI Suggestions -->
+            <div class="resume-right">
+              <div class="resume-panel">
+                <h3>\u{1F50D} Missing Keywords</h3>
+                <div style="margin-bottom:0.5rem;">
+                  <span style="font-size:0.7rem;color:var(--text-muted);">
+                    <span class="keyword-chip critical" style="font-size:0.65rem;padding:2px 8px;">Critical</span>
+                    <span class="keyword-chip important" style="font-size:0.65rem;padding:2px 8px;">Important</span>
+                    <span class="keyword-chip nice-to-have" style="font-size:0.65rem;padding:2px 8px;">Nice to have</span>
+                  </span>
+                </div>
+                <div class="keywords-grid">${kwHTML || '<span style="color:var(--text-muted);font-size:0.9rem;">All keywords covered!</span>'}</div>
+              </div>
+
+              <div class="resume-panel">
+                <h3>\u270F\uFE0F Rewritten Bullet Points</h3>
+                ${bulletsHTML || '<p style="color:var(--text-muted);font-size:0.9rem;">Your bullet points look solid!</p>'}
+              </div>
+
+              <div class="resume-panel">
+                <h3>\u{1F680} Recommendations</h3>
+                ${recsHTML}
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Summary -->
+          <div class="resume-summary-banner">
+            <h3 style="margin-bottom:0.5rem;">\u{1F4AC} Overall Assessment</h3>
+            <p>${a.overallSummary || ''}</p>
+          </div>
+
+          <!-- Actions -->
+          <div style="text-align:center;margin-top:2rem;">
+            <button class="btn btn-secondary" onclick="reanalyze()">\u{1F504} Analyze Again</button>
+            <a href="/skill-assessment" class="btn btn-primary" style="margin-left:0.75rem;">\u{1F4CA} Take Skill Assessment</a>
+          </div>
+        </div>`;
+
+      // Animate ATS score
+      animateNumber('atsAnimated', score);
+    }
+
+    function animateNumber(elId, target) {
+      const el = document.getElementById(elId);
+      let current = 0;
+      const step = target / (1200 / 16);
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.round(current);
+      }, 16);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function reanalyze() {
+      showPanel('formPanel');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevGrow — AI-Powered Developer Career Growth Platform</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        AI-Powered Platform
+      </div>
+      <h1>
+        <span class="gradient-text">Your AI Career Coach</span><br />
+        for the Tech World
+      </h1>
+      <p class="hero-subtitle">
+        Get personalized skill assessments, AI-generated learning roadmaps,
+        resume analysis, mock interviews, and career path guidance — all powered by advanced AI.
+      </p>
+      <div class="hero-actions">
+        <a href="/skill-assessment" class="btn btn-primary">
+          ⚡ Start Assessment
+        </a>
+        <a href="/career-path" class="btn btn-secondary">
+          🗺️ Explore Career Paths
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">50+</div>
+          <div class="stat-label">Tech Skills Covered</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">AI</div>
+          <div class="stat-label">Powered Insights</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Available Coach</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">Free</div>
+          <div class="stat-label">To Get Started</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress Dashboard -->
+  <section class="dashboard-section" id="dashboard">
+    <div class="section-header reveal">
+      <div class="section-badge">📊 Your Progress</div>
+      <h2 class="section-title">Growth <span class="gradient-text">Dashboard</span></h2>
+      <p class="section-subtitle">Track your career development across all DevGrow modules.</p>
+    </div>
+
+    <div class="dashboard-grid" id="dashGrid">
+      <div class="dash-card purple reveal reveal-delay-1">
+        <div class="dash-card-icon">📊</div>
+        <div class="dash-card-value" id="dashSkill">—</div>
+        <div class="dash-card-label">Skill Score</div>
+        <div class="dash-card-sub" id="dashSkillSub">Take an assessment</div>
+      </div>
+      <div class="dash-card cyan reveal reveal-delay-2">
+        <div class="dash-card-icon">🗺️</div>
+        <div class="dash-card-value" id="dashRoadmap">0%</div>
+        <div class="dash-card-label">Roadmap Progress</div>
+        <div class="dash-card-sub" id="dashRoadmapSub">Generate a roadmap</div>
+      </div>
+      <div class="dash-card green reveal reveal-delay-3">
+        <div class="dash-card-icon">🎙️</div>
+        <div class="dash-card-value" id="dashInterview">0</div>
+        <div class="dash-card-label">Interviews Done</div>
+        <div class="dash-card-sub" id="dashInterviewSub">Start practicing</div>
+      </div>
+      <div class="dash-card orange reveal reveal-delay-4">
+        <div class="dash-card-icon">📄</div>
+        <div class="dash-card-value" id="dashResume">—</div>
+        <div class="dash-card-label">Resume ATS Score</div>
+        <div class="dash-card-sub" id="dashResumeSub">Analyze your resume</div>
+      </div>
+    </div>
+
+    <div class="dashboard-charts" id="dashCharts">
+      <div class="chart-card reveal reveal-delay-2">
+        <div class="chart-card-title">📈 Score Trends</div>
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+        <div class="dash-empty-state" id="trendEmpty" style="display:none;">
+          Complete assessments to see your progress trends. <a href="/skill-assessment">Start now →</a>
+        </div>
+      </div>
+      <div class="chart-card reveal reveal-delay-3">
+        <div class="chart-card-title">🎯 Module Overview</div>
+        <div class="chart-container">
+          <canvas id="overviewChart"></canvas>
+        </div>
+        <div class="dash-empty-state" id="overviewEmpty" style="display:none;">
+          Use different modules to build your profile. <a href="/skill-assessment">Get started →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-header reveal">
+      <div class="section-badge">✨ Features</div>
+      <h2 class="section-title">Everything You Need to <span class="gradient-text">Level Up</span></h2>
+      <p class="section-subtitle">Comprehensive AI-powered tools designed to accelerate your developer career growth.</p>
+    </div>
+
+    <div class="features-grid">
+      <a href="/skill-assessment" class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon blue">📊</div>
+        <h3>Skill Assessment</h3>
+        <p>Get an AI-driven evaluation of your technical skills with detailed scoring, strengths analysis, and personalized improvement recommendations.</p>
+        <span class="feature-tag">AI Analysis</span>
+      </a>
+
+      <a href="/learning-roadmap" class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon purple">🗺️</div>
+        <h3>Learning Roadmap</h3>
+        <p>Receive a customized learning path based on your current skills and career goals. Curated resources, timelines, and milestones included.</p>
+        <span class="feature-tag">Personalized</span>
+      </a>
+
+      <a href="/resume-analyzer" class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon cyan">📄</div>
+        <h3>Resume Analyzer</h3>
+        <p>Upload your resume and get instant AI feedback — ATS compatibility score, keyword optimization, and section-by-section improvement tips.</p>
+        <span class="feature-tag">ATS Optimized</span>
+      </a>
+
+      <a href="/mock-interview" class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon green">🎙️</div>
+        <h3>Mock Interview</h3>
+        <p>Practice with an AI interviewer that adapts to your role and experience level. Get scored feedback and ideal answer examples.</p>
+        <span class="feature-tag">Interactive</span>
+      </a>
+
+      <a href="/career-path" class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon orange">🧭</div>
+        <h3>Career Path Explorer</h3>
+        <p>Discover career trajectories tailored to your interests — salary ranges, required skills, transition timelines, and top hiring companies.</p>
+        <span class="feature-tag">Data-Driven</span>
+      </a>
+
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon pink">🤖</div>
+        <h3>AI Career Chat</h3>
+        <p>Chat with your AI career coach anytime. Ask questions about technologies, career moves, salary negotiation, and professional development.</p>
+        <span class="feature-tag">Always Available</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" style="background: var(--bg-secondary);">
+    <div class="section-header reveal">
+      <div class="section-badge">🔧 How It Works</div>
+      <h2 class="section-title">Three Steps to <span class="gradient-text">Career Growth</span></h2>
+      <p class="section-subtitle">Simple, fast, and effective — get actionable insights in minutes.</p>
+    </div>
+
+    <div class="steps-container">
+      <div class="step reveal">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Tell Us About Yourself</h3>
+          <p>Share your current skills, experience level, role, and career aspirations. The more context you provide, the better our AI can help you.</p>
+        </div>
+      </div>
+      <div class="step reveal reveal-delay-1">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>AI Analyzes & Recommends</h3>
+          <p>Our advanced AI engine processes your profile against industry standards, job market data, and tech trends to generate personalized insights.</p>
+        </div>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Act on Your Growth Plan</h3>
+          <p>Follow your customized roadmap, practice with mock interviews, optimize your resume, and track your progress as you advance in your career.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section">
+    <div class="section-header reveal">
+      <div class="section-badge">💬 Testimonials</div>
+      <h2 class="section-title">Loved by <span class="gradient-text">Developers</span></h2>
+      <p class="section-subtitle">See how DevGrow is helping developers accelerate their careers.</p>
+    </div>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"DevGrow's skill assessment helped me identify gaps I didn't even know I had. The learning roadmap got me from junior to mid-level in 8 months."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AP</div>
+          <div>
+            <div class="testimonial-name">Arjun Patel</div>
+            <div class="testimonial-role">Full-Stack Developer at Flipkart</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The mock interview feature is incredible. It felt like talking to a real senior engineer. I aced my Google interview after 2 weeks of practice."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">SK</div>
+          <div>
+            <div class="testimonial-name">Sarah Kim</div>
+            <div class="testimonial-role">SDE II at Google</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-3">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The resume analyzer caught so many issues my human reviewers missed. My callback rate went from 5% to 35% after applying the suggestions."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MR</div>
+          <div>
+            <div class="testimonial-name">Marcus Rodriguez</div>
+            <div class="testimonial-role">Backend Engineer at Stripe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-content reveal">
+      <h2>Ready to <span class="gradient-text">Accelerate</span> Your Career?</h2>
+      <p>Join thousands of developers using AI to grow faster. Start with a free skill assessment today.</p>
+      <div class="hero-actions">
+        <a href="/skill-assessment" class="btn btn-primary">🚀 Get Started Free</a>
+        <a href="/career-path" class="btn btn-secondary">📖 Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-root"></div>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('home');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    // ===== Populate Dashboard =====
+    function populateDashboard() {
+      const p = DevGrowProgress.getAll();
+
+      // Skill
+      if (p.skillScore != null) {
+        document.getElementById('dashSkill').textContent = p.skillScore + '%';
+        document.getElementById('dashSkillSub').textContent = 'Grade: ' + (p.skillGrade || '—');
+      }
+
+      // Roadmap
+      if (p.roadmapPercent != null) {
+        document.getElementById('dashRoadmap').textContent = p.roadmapPercent + '%';
+        document.getElementById('dashRoadmapSub').textContent = 'Keep learning!';
+      }
+
+      // Interview
+      if (p.interviewCount) {
+        document.getElementById('dashInterview').textContent = p.interviewCount;
+        document.getElementById('dashInterviewSub').textContent =
+          'Last score: ' + (p.lastInterviewScore || '—') + '/100';
+      }
+
+      // Resume
+      if (p.resumeScore != null) {
+        document.getElementById('dashResume').textContent = p.resumeScore + '%';
+        document.getElementById('dashResumeSub').textContent = 'ATS Compatibility';
+      }
+    }
+
+    // ===== Charts =====
+    function renderCharts() {
+      const p = DevGrowProgress.getAll();
+      const hasData = p.skillScore != null || p.resumeScore != null || p.interviewCount;
+
+      // Chart.js global config for dark theme
+      Chart.defaults.color = '#a0a0be';
+      Chart.defaults.borderColor = 'rgba(42, 42, 66, 0.5)';
+      Chart.defaults.font.family = 'Inter';
+
+      // -- Trend Line Chart --
+      const trendCanvas = document.getElementById('trendChart');
+      const trendEmpty = document.getElementById('trendEmpty');
+
+      const skillHist = (p.skillHistory || []).slice(-6);
+      const resumeHist = (p.resumeHistory || []).slice(-6);
+      const interviewHist = (p.interviewHistory || []).slice(-6);
+
+      const hasTrendData = skillHist.length > 0 || resumeHist.length > 0 || interviewHist.length > 0;
+
+      if (!hasTrendData) {
+        trendCanvas.style.display = 'none';
+        trendEmpty.style.display = 'block';
+      } else {
+        const maxLen = Math.max(skillHist.length, resumeHist.length, interviewHist.length, 2);
+        const labels = Array.from({length: maxLen}, (_, i) => 'Session ' + (i + 1));
+
+        new Chart(trendCanvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Skill Score',
+                data: skillHist.map(h => h.score),
+                borderColor: '#6c63ff',
+                backgroundColor: 'rgba(108, 99, 255, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#6c63ff',
+                pointRadius: 4,
+              },
+              {
+                label: 'Resume ATS',
+                data: resumeHist.map(h => h.score),
+                borderColor: '#00d4ff',
+                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#00d4ff',
+                pointRadius: 4,
+              },
+              {
+                label: 'Interview',
+                data: interviewHist.map(h => h.score),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointRadius: 4,
+              },
+            ].filter(ds => ds.data.length > 0)
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } },
+            },
+            scales: {
+              y: { min: 0, max: 100, grid: { color: 'rgba(42, 42, 66, 0.3)' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // -- Overview Radar / Bar Chart --
+      const overviewCanvas = document.getElementById('overviewChart');
+      const overviewEmpty = document.getElementById('overviewEmpty');
+
+      if (!hasData) {
+        overviewCanvas.style.display = 'none';
+        overviewEmpty.style.display = 'block';
+      } else {
+        new Chart(overviewCanvas, {
+          type: 'bar',
+          data: {
+            labels: ['Skill Score', 'Roadmap', 'Interview', 'Resume ATS'],
+            datasets: [{
+              label: 'Your Score',
+              data: [
+                p.skillScore || 0,
+                p.roadmapPercent || 0,
+                p.lastInterviewScore || 0,
+                p.resumeScore || 0
+              ],
+              backgroundColor: [
+                'rgba(108, 99, 255, 0.7)',
+                'rgba(0, 212, 255, 0.7)',
+                'rgba(16, 185, 129, 0.7)',
+                'rgba(245, 158, 11, 0.7)',
+              ],
+              borderRadius: 8,
+              borderSkipped: false,
+              maxBarThickness: 50,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 100,
+                grid: { color: 'rgba(42, 42, 66, 0.3)' },
+                ticks: { callback: v => v + '%' }
+              },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+    }
+
+    populateDashboard();
+    renderCharts();
+  </script>
+</body>
+</html>

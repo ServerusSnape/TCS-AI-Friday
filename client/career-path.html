@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Path Recommender — DevGrow</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>🧭 <span class="gradient-text">Career Path Recommender</span></h1>
+      <p>Discover the best career trajectories based on your skills, interests, and goals.</p>
+    </div>
+
+    <div class="page-content">
+      <!-- ====== Setup Form ====== -->
+      <div id="setupPanel">
+        <form id="careerForm">
+
+          <!-- Skills -->
+          <div class="form-group">
+            <label>Current Skills (select all that apply)</label>
+            <div class="checkbox-grid" id="skillsGrid">
+            </div>
+          </div>
+
+          <!-- Interests -->
+          <div class="form-group">
+            <label>Interests & Passions</label>
+            <div class="checkbox-grid" id="interestsGrid">
+            </div>
+          </div>
+
+          <!-- Experience -->
+          <div class="form-group">
+            <label>Experience Level</label>
+            <select class="form-control" id="experience">
+              <option value="Student / Fresher">Student / Fresher</option>
+              <option value="0-1 years">0 – 1 year</option>
+              <option value="1-3 years" selected>1 – 3 years</option>
+              <option value="3-5 years">3 – 5 years</option>
+              <option value="5-8 years">5 – 8 years</option>
+              <option value="8+ years">8+ years</option>
+            </select>
+          </div>
+
+          <!-- Salary -->
+          <div class="form-group">
+            <label>Salary Expectation (annual, USD)</label>
+            <select class="form-control" id="salaryExpectation">
+              <option value="$50K - $80K">$50K – $80K</option>
+              <option value="$80K - $120K" selected>$80K – $120K</option>
+              <option value="$120K - $160K">$120K – $160K</option>
+              <option value="$160K - $200K">$160K – $200K</option>
+              <option value="$200K+">$200K+</option>
+            </select>
+          </div>
+
+          <!-- Work Style -->
+          <div class="form-group">
+            <label>Work Style Preference</label>
+            <select class="form-control" id="workStyle">
+              <option value="Remote">🏠 Remote</option>
+              <option value="Hybrid" selected>🔄 Hybrid</option>
+              <option value="Onsite">🏢 Onsite</option>
+              <option value="No preference">🤷 No Preference</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;">🧭 Find My Career Paths</button>
+        </form>
+      </div>
+
+      <!-- ====== Results ====== -->
+      <div id="resultsPanel" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('career-path');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    // =========== Populate checkboxes ===========
+    const skillOptions = [
+      'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'Go', 'Rust',
+      'React', 'Angular', 'Vue.js', 'Next.js', 'Node.js', 'Django', 'Flask',
+      'HTML/CSS', 'SQL', 'MongoDB', 'PostgreSQL', 'Redis',
+      'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes',
+      'Git', 'CI/CD', 'REST APIs', 'GraphQL',
+      'Machine Learning', 'Data Science', 'TensorFlow', 'PyTorch',
+      'Linux', 'Networking', 'Security', 'Figma',
+      'Selenium', 'Cypress', 'JMeter', 'Postman', 'JIRA',
+      'Manual Testing', 'Test Automation', 'API Testing',
+      'Agile/Scrum', 'Excel', 'Tableau', 'Power BI',
+      'Technical Writing', 'Product Management'
+    ];
+
+    const interestOptions = [
+      '🎨 UI/UX Design', '🤖 AI & Machine Learning', '☁️ Cloud & DevOps',
+      '📊 Data & Analytics', '🔒 Cybersecurity', '📱 Mobile Development',
+      '🎮 Game Development', '🌐 Web Development', '⚙️ Automation',
+      '🏗️ System Design', '💼 Tech Leadership', '🚀 Startups',
+      '📈 Fintech', '🏥 HealthTech', '🔗 Blockchain', '🧪 Research',
+      '🧪 QA & Testing', '📝 Technical Writing', '📋 Project Management',
+      '🛡️ Information Security', '📡 Networking & Infrastructure'
+    ];
+
+    function buildCheckboxGrid(containerId, options) {
+      const grid = document.getElementById(containerId);
+      options.forEach((opt, i) => {
+        const id = containerId + '_' + i;
+        const div = document.createElement('div');
+        div.className = 'checkbox-item';
+        div.innerHTML = `<input type="checkbox" id="${id}" value="${opt}"><label for="${id}">${opt}</label>`;
+        div.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'INPUT') {
+            const cb = div.querySelector('input');
+            cb.checked = !cb.checked;
+          }
+          div.classList.toggle('checked', div.querySelector('input').checked);
+        });
+        grid.appendChild(div);
+      });
+    }
+
+    buildCheckboxGrid('skillsGrid', skillOptions);
+    buildCheckboxGrid('interestsGrid', interestOptions);
+
+    function getChecked(containerId) {
+      return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(cb => cb.value);
+    }
+
+    // =========== Submit ===========
+    document.getElementById('careerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const skills = getChecked('skillsGrid');
+      const interests = getChecked('interestsGrid');
+
+      if (skills.length === 0) {
+        alert('Please select at least one skill.');
+        return;
+      }
+      if (interests.length === 0) {
+        alert('Please select at least one interest.');
+        return;
+      }
+
+      document.getElementById('setupPanel').style.display = 'none';
+      const resultsPanel = document.getElementById('resultsPanel');
+      resultsPanel.style.display = 'block';
+      resultsPanel.innerHTML = `
+        <div class="loading" style="padding:3rem 0;">
+          <div class="loading-spinner"></div>
+          <p>AI is analyzing your profile and finding the best career paths...</p>
+        </div>`;
+
+      try {
+        const res = await apiPost('/api/career/recommend', {
+          skills,
+          interests,
+          experience: document.getElementById('experience').value,
+          salaryExpectation: document.getElementById('salaryExpectation').value,
+          workStyle: document.getElementById('workStyle').value
+        });
+
+        if (!res.success) throw new Error(res.error);
+        renderResults(res.data);
+      } catch (err) {
+        resultsPanel.innerHTML = `
+          <div class="feedback-card" style="border-color:#ef4444;">
+            <p style="color:#ef4444;">❌ Error: ${err.message}</p>
+            <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+          </div>`;
+      }
+    });
+
+    // =========== Render Results ===========
+    function renderResults(data) {
+      const panel = document.getElementById('resultsPanel');
+      const rankLabels = ['🥇', '🥈', '🥉'];
+      const ringCircum = 2 * Math.PI * 28; // r=28
+
+      let cardsHTML = data.paths.map((path, idx) => {
+        const offset = ringCircum - (ringCircum * path.matchPercent / 100);
+        const matchColor = path.matchPercent >= 80 ? '#22c55e' : path.matchPercent >= 60 ? '#f59e0b' : '#ef4444';
+        const demandSlug = path.marketDemand.toLowerCase().replace(/\s+/g, '-');
+        const trendIcon = path.demandTrend === 'up' ? '📈' : path.demandTrend === 'down' ? '📉' : '➡️';
+
+        return `
+        <div class="career-card">
+          <!-- Header -->
+          <div class="career-card-header">
+            <div class="career-card-rank rank-${idx + 1}">${rankLabels[idx]}</div>
+            <div class="career-card-title-group">
+              <span class="career-card-icon">${path.icon}</span>
+              <div>
+                <div class="career-card-title">${path.title}</div>
+                <div class="career-card-tagline">${path.tagline}</div>
+              </div>
+            </div>
+            <div class="career-match-ring">
+              <svg width="70" height="70">
+                <circle class="ring-bg" cx="35" cy="35" r="28"></circle>
+                <circle class="ring-fill" cx="35" cy="35" r="28"
+                  stroke="${matchColor}"
+                  stroke-dasharray="${ringCircum}"
+                  stroke-dashoffset="${offset}"></circle>
+              </svg>
+              <div class="career-match-value">${path.matchPercent}%</div>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="career-card-body">
+
+            <!-- Why It Fits -->
+            <div class="career-section">
+              <div class="career-section-label">✦ Why This Suits You</div>
+              <ul class="why-fit-list">
+                ${path.whyFit.map(w => `<li>${w}</li>`).join('')}
+              </ul>
+            </div>
+
+            <!-- Skills Gap -->
+            <div class="career-section">
+              <div class="career-section-label">🔧 Skills Gap</div>
+              <div class="skills-gap-grid">
+                ${path.skillsGap.map(sg => `
+                  <span class="skill-gap-chip priority-${sg.priority}">
+                    ${sg.skill}
+                    <span class="gap-level">${sg.level}</span>
+                  </span>`).join('')}
+              </div>
+            </div>
+
+            <!-- Salary & Market -->
+            <div class="career-section">
+              <div class="career-section-label">💰 Salary & Market</div>
+              <div class="career-meta-row">
+                <div class="career-meta-box">
+                  <div class="meta-label">Salary Range (USD)</div>
+                  <div class="salary-tiers">
+                    <div class="salary-tier"><span class="tier-name">Entry</span><span class="tier-value">${path.salaryRange.entry}</span></div>
+                    <div class="salary-tier"><span class="tier-name">Mid</span><span class="tier-value">${path.salaryRange.mid}</span></div>
+                    <div class="salary-tier"><span class="tier-name">Senior</span><span class="tier-value">${path.salaryRange.senior}</span></div>
+                  </div>
+                  <div class="salary-average">
+                    <span class="avg-label">Average</span>
+                    <span class="avg-value">${path.salaryRange.average}</span>
+                  </div>
+                </div>
+                <div class="career-meta-box">
+                  <div class="meta-label">Job Market</div>
+                  <div class="demand-indicator">
+                    <span class="demand-badge demand-${demandSlug}">${path.marketDemand}</span>
+                    <span class="demand-trend">${trendIcon} ${path.demandTrend}</span>
+                  </div>
+                  <div class="meta-label" style="margin-top:0.75rem;">Top Companies</div>
+                  <div class="companies-list">
+                    ${path.topCompanies.map(c => `<span class="company-tag">${c}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Certifications -->
+            ${path.certifications && path.certifications.length ? `
+            <div class="career-section">
+              <div class="career-section-label">🎓 Recommended Certifications</div>
+              <div class="certs-list">
+                ${path.certifications.map(c => `<span class="cert-badge">${c}</span>`).join('')}
+              </div>
+            </div>` : ''}
+
+            <!-- Day in the Life -->
+            ${path.dayInLife ? `
+            <div class="career-section">
+              <div class="career-section-label">🌅 A Day in the Life</div>
+              <div class="day-in-life-text">"${path.dayInLife}"</div>
+            </div>` : ''}
+
+            <!-- First 3 Steps -->
+            <div class="career-section">
+              <div class="career-section-label">🚀 First 3 Steps to Get Started</div>
+              <div class="first-steps">
+                ${path.firstSteps.map(s => `
+                  <div class="step-item">
+                    <div class="step-number">${s.step}</div>
+                    <div class="step-content">
+                      <div class="step-action">${s.action}</div>
+                      <div class="step-timeframe">⏱️ ${s.timeframe}</div>
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>
+
+            <button class="start-path-btn" onclick="startPath('${path.title.replace(/'/g, "\\'")}')">
+              🚀 Start This Path →
+            </button>
+
+          </div>
+        </div>`;
+      }).join('');
+
+      panel.innerHTML = `
+        ${data.profileSummary ? `
+        <div class="career-profile-summary">
+          <p>📋 ${data.profileSummary}</p>
+        </div>` : ''}
+        <div class="career-cards">${cardsHTML}</div>
+        <div style="text-align:center;margin-top:2rem;">
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+        </div>`;
+    }
+
+    function startPath(title) {
+      window.location.href = '/learning-roadmap?role=' + encodeURIComponent(title);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Roadmap — DevGrow</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>🗺️ <span class="gradient-text">Learning Roadmap</span></h1>
+      <p>Get a personalized week-by-week learning plan with resources, projects, and milestones.</p>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Input Form -->
+      <div id="formPanel">
+        <form id="roadmapForm">
+          <div class="form-group">
+            <label>Target Role — What do you want to become?</label>
+            <select class="form-control" id="goalRole">
+              <optgroup label="Development">
+                <option value="Frontend Developer">Frontend Developer</option>
+                <option value="Backend Developer">Backend Developer</option>
+                <option value="Full-Stack Developer" selected>Full-Stack Developer</option>
+                <option value="Mobile Developer">Mobile Developer</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+                <option value="Blockchain Developer">Blockchain Developer</option>
+              </optgroup>
+              <optgroup label="Quality &amp; Testing">
+                <option value="QA Engineer">QA Engineer (Manual)</option>
+                <option value="Automation Test Engineer">Automation Test Engineer</option>
+                <option value="SDET">SDET</option>
+                <option value="Performance Test Engineer">Performance Test Engineer</option>
+              </optgroup>
+              <optgroup label="Data &amp; AI">
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="Data Engineer">Data Engineer</option>
+                <option value="ML Engineer">ML Engineer</option>
+                <option value="Business Intelligence Analyst">BI Analyst</option>
+              </optgroup>
+              <optgroup label="Design &amp; Product">
+                <option value="UI/UX Designer">UI/UX Designer</option>
+                <option value="Product Manager">Product Manager</option>
+              </optgroup>
+              <optgroup label="Security &amp; Cloud">
+                <option value="Cybersecurity Engineer">Cybersecurity Engineer</option>
+                <option value="Cloud Architect">Cloud Architect</option>
+                <option value="Network Engineer">Network Engineer</option>
+              </optgroup>
+              <optgroup label="Management &amp; Other">
+                <option value="Engineering Manager">Engineering Manager</option>
+                <option value="Scrum Master">Scrum Master</option>
+                <option value="Technical Writer">Technical Writer</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Current Experience Level</label>
+            <select class="form-control" id="level">
+              <option value="Complete Beginner">Complete Beginner</option>
+              <option value="Some Basics" selected>Know Some Basics</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced — Want to Specialize</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Skills you already know (comma separated)</label>
+            <input type="text" class="form-control" id="existingSkills" placeholder="e.g. HTML, CSS, JavaScript, React" />
+          </div>
+
+          <div class="form-group">
+            <label>Hours per week you can dedicate</label>
+            <select class="form-control" id="hoursPerWeek">
+              <option value="5-10">5 – 10 hours</option>
+              <option value="10-20" selected>10 – 20 hours</option>
+              <option value="20-30">20 – 30 hours</option>
+              <option value="30+">30+ hours (Full-time learning)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;">🗺️ Generate My Roadmap</button>
+        </form>
+      </div>
+
+      <!-- Loading -->
+      <div id="loadingPanel" style="display:none;">
+        <div class="loading" style="padding: 4rem 2rem;">
+          <div class="loading-spinner"></div>
+          <span>AI is building your personalized roadmap...</span>
+        </div>
+      </div>
+
+      <!-- Roadmap Result -->
+      <div id="roadmapPanel" style="display:none;"></div>
+
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('learning-roadmap');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    function showPanel(id) {
+      ['formPanel', 'loadingPanel', 'roadmapPanel'].forEach(p => {
+        document.getElementById(p).style.display = p === id ? 'block' : 'none';
+      });
+    }
+
+    document.getElementById('roadmapForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showPanel('loadingPanel');
+
+      const res = await apiPost('/api/ai/roadmap', {
+        targetRole: document.getElementById('goalRole').value,
+        currentSkills: document.getElementById('existingSkills').value,
+        level: document.getElementById('level').value,
+        hoursPerWeek: document.getElementById('hoursPerWeek').value,
+      });
+
+      if (res.success && res.roadmap) {
+        renderRoadmap(res.roadmap);
+        showPanel('roadmapPanel');
+      } else {
+        alert('Failed to generate roadmap: ' + (res.error || 'Unknown error'));
+        showPanel('formPanel');
+      }
+    });
+
+    function renderRoadmap(rm) {
+      const colors = ['blue', 'purple', 'cyan', 'green', 'orange', 'pink'];
+
+      // Build phases HTML
+      const phasesHTML = (rm.phases || []).map((phase, i) => {
+        const color = phase.color || colors[i % colors.length];
+        const icon = phase.icon || '\u{1F4D6}';
+
+        // Topics
+        const topicsHTML = (phase.topics || []).map(t => {
+          const cls = (t.importance || 'important').replace(/ /g, '-').toLowerCase();
+          return `<span class="topic-pill ${cls}">${t.name}</span>`;
+        }).join('');
+
+        // Resources
+        const resourcesHTML = (phase.resources || []).map(r => `
+          <div class="resource-item">
+            <span class="resource-name">${r.name}</span>
+            <div class="resource-badges">
+              <span class="resource-platform">${r.platform || ''}</span>
+              <span class="resource-type-badge ${(r.type || 'free').toLowerCase()}">${r.type || 'free'}</span>
+            </div>
+          </div>
+        `).join('');
+
+        // Projects
+        const projectsHTML = (phase.projects || []).map(p => `
+          <div class="project-card">
+            <h4>\u{1F6E0}\uFE0F ${p.name}</h4>
+            <p>${p.description}</p>
+          </div>
+        `).join('');
+
+        // Milestones
+        const milestonesHTML = (phase.milestones || []).map(m =>
+          `<li>${m}</li>`
+        ).join('');
+
+        return `
+          <div class="timeline-phase">
+            <div class="timeline-dot ${color}"></div>
+            <div class="phase-card" id="phase-${i}">
+              <div class="phase-header" onclick="togglePhase(${i})">
+                <div class="phase-header-left">
+                  <div class="phase-icon">${icon}</div>
+                  <div class="phase-info">
+                    <h3>${phase.name}</h3>
+                    <span class="phase-duration">${phase.weeks || ''} \u2022 ${phase.duration || ''}</span>
+                  </div>
+                </div>
+                <div class="phase-toggle">\u25BC</div>
+              </div>
+              <div class="phase-body">
+                <div class="phase-body-inner">
+                  <p class="phase-description">${phase.description || ''}</p>
+
+                  <div class="phase-section">
+                    <div class="phase-section-title">\u{1F4DA} Topics to Learn</div>
+                    <div class="topic-list">${topicsHTML}</div>
+                  </div>
+
+                  <div class="phase-section">
+                    <div class="phase-section-title">\u{1F517} Recommended Resources</div>
+                    <div class="resource-list">${resourcesHTML}</div>
+                  </div>
+
+                  <div class="phase-section">
+                    <div class="phase-section-title">\u{1F528} Projects to Build</div>
+                    ${projectsHTML}
+                  </div>
+
+                  <div class="phase-section">
+                    <div class="phase-section-title">\u{1F3AF} Milestones</div>
+                    <ul class="milestone-list">${milestonesHTML}</ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Tips
+      const tipsHTML = (rm.tips || []).map(t => `<li>${t}</li>`).join('');
+
+      document.getElementById('roadmapPanel').innerHTML = `
+        <div class="roadmap-result">
+          <div class="roadmap-header-card">
+            <div class="roadmap-title">${rm.title || 'Your Learning Roadmap'}</div>
+            <div class="roadmap-meta">
+              <div class="roadmap-meta-item">\u{1F4C5} <strong>${rm.estimatedWeeks || '?'} weeks</strong> total</div>
+              <div class="roadmap-meta-item">\u{1F3C1} Job-ready in <strong>${rm.jobReadyTime || 'N/A'}</strong></div>
+              <div class="roadmap-meta-item">\u{1F4CA} ${rm.phases ? rm.phases.length : 0} phases</div>
+            </div>
+          </div>
+
+          <div class="timeline">
+            ${phasesHTML}
+          </div>
+
+          ${tipsHTML ? `
+          <div class="tips-card">
+            <h3>\u{1F4A1} Pro Tips</h3>
+            <ul class="tips-list">${tipsHTML}</ul>
+          </div>` : ''}
+
+          <div style="text-align:center;margin-top:2rem;">
+            <button class="btn btn-secondary" onclick="regenerate()">\u{1F504} Generate New Roadmap</button>
+            <a href="/skill-assessment" class="btn btn-primary" style="margin-left:0.75rem;">\u{1F4CA} Take Skill Assessment</a>
+          </div>
+        </div>`;
+
+      // Auto-expand the first phase
+      setTimeout(() => togglePhase(0), 300);
+    }
+
+    function togglePhase(idx) {
+      const card = document.getElementById('phase-' + idx);
+      if (card) card.classList.toggle('expanded');
+    }
+
+    function regenerate() {
+      showPanel('formPanel');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

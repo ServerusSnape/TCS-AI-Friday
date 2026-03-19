@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Assessment — DevGrow</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>📊 <span class="gradient-text">Skill Assessment</span></h1>
+      <p>Take a 10-question AI-generated quiz tailored to your role — from QA and data to design and development — and get a detailed scorecard with personalized insights.</p>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Step 1: Setup -->
+      <div id="setupPanel">
+        <form id="setupForm">
+          <div class="form-group">
+            <label>Select Your Role</label>
+            <select class="form-control" id="role">
+              <optgroup label="Development">
+                <option value="Frontend Developer">Frontend Developer</option>
+                <option value="Backend Developer">Backend Developer</option>
+                <option value="Full Stack Developer" selected>Full Stack Developer</option>
+                <option value="Mobile App Developer">Mobile App Developer</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+                <option value="AI/ML Engineer">AI/ML Engineer</option>
+              </optgroup>
+              <optgroup label="Quality &amp; Testing">
+                <option value="QA Engineer">QA Engineer (Manual)</option>
+                <option value="Automation Test Engineer">Automation Test Engineer</option>
+                <option value="SDET">SDET</option>
+                <option value="Performance Test Engineer">Performance Test Engineer</option>
+              </optgroup>
+              <optgroup label="Data &amp; Analytics">
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="Data Engineer">Data Engineer</option>
+                <option value="Business Intelligence Analyst">Business Intelligence Analyst</option>
+              </optgroup>
+              <optgroup label="Design &amp; Product">
+                <option value="UI/UX Designer">UI/UX Designer</option>
+                <option value="Product Manager">Product Manager</option>
+              </optgroup>
+              <optgroup label="Security &amp; Infrastructure">
+                <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                <option value="Cloud Engineer">Cloud Engineer</option>
+                <option value="Network Engineer">Network Engineer</option>
+              </optgroup>
+              <optgroup label="Management &amp; Leadership">
+                <option value="Engineering Manager">Engineering Manager</option>
+                <option value="Scrum Master">Scrum Master</option>
+                <option value="Technical Writer">Technical Writer</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Experience Level</label>
+            <select class="form-control" id="level">
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate" selected>Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;">⚡ Generate Quiz</button>
+        </form>
+      </div>
+
+      <!-- Step 2: Quiz -->
+      <div id="quizPanel" style="display:none;"></div>
+
+      <!-- Step 3: Scorecard -->
+      <div id="scorecardPanel" style="display:none;"></div>
+
+      <!-- Loading state -->
+      <div id="loadingPanel" style="display:none;">
+        <div class="loading" style="padding: 4rem 2rem;">
+          <div class="loading-spinner"></div>
+          <span id="loadingText">AI is generating your quiz...</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+
+  <!-- SVG gradient definition for score circle -->
+  <svg width="0" height="0" style="position:absolute;">
+    <defs>
+      <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#8b5cf6" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('skill-assessment');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    let quizData = [];
+    let userAnswers = [];
+    let currentQuestion = 0;
+
+    // ─── Show / Hide panels ───
+    function showPanel(id) {
+      ['setupPanel', 'quizPanel', 'scorecardPanel', 'loadingPanel'].forEach(p => {
+        document.getElementById(p).style.display = p === id ? 'block' : 'none';
+      });
+    }
+
+    // ─── Step 1: Generate Quiz ───
+    document.getElementById('setupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showPanel('loadingPanel');
+      document.getElementById('loadingText').textContent = 'AI is generating your quiz...';
+
+      const res = await apiPost('/api/assessment/generate-quiz', {
+        role: document.getElementById('role').value,
+        level: document.getElementById('level').value,
+      });
+
+      if (res.success && res.questions) {
+        quizData = res.questions;
+        userAnswers = new Array(quizData.length).fill(-1);
+        currentQuestion = 0;
+        renderQuiz();
+        showPanel('quizPanel');
+      } else {
+        alert('Failed to generate quiz: ' + (res.error || 'Unknown error'));
+        showPanel('setupPanel');
+      }
+    });
+
+    // ─── Step 2: Render Quiz ───
+    function renderQuiz() {
+      const q = quizData[currentQuestion];
+      const total = quizData.length;
+      const progress = ((currentQuestion + 1) / total) * 100;
+      const optionLetters = ['A', 'B', 'C', 'D'];
+
+      const optionsHTML = q.options.map((opt, i) => `
+        <div class="quiz-option ${userAnswers[currentQuestion] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+          <div class="quiz-option-marker">${optionLetters[i]}</div>
+          <span>${opt}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('quizPanel').innerHTML = `
+        <div class="quiz-container">
+          <div class="quiz-progress">
+            <div class="quiz-progress-bar">
+              <div class="quiz-progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <span class="quiz-progress-text">${currentQuestion + 1} / ${total}</span>
+          </div>
+
+          <div class="quiz-question-card">
+            <div class="quiz-category-badge">\u{1F4C2} ${q.category}</div>
+            <div class="quiz-question-number">Question ${currentQuestion + 1} of ${total}</div>
+            <div class="quiz-question-text">${q.question}</div>
+            <div class="quiz-options">
+              ${optionsHTML}
+            </div>
+          </div>
+
+          <div class="quiz-nav">
+            <button class="btn btn-secondary" onclick="prevQuestion()" ${currentQuestion === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
+              \u2190 Previous
+            </button>
+            ${currentQuestion === total - 1
+              ? `<button class="btn btn-primary" onclick="submitQuiz()">\u{1F3C6} Submit Quiz</button>`
+              : `<button class="btn btn-primary" onclick="nextQuestion()">Next \u2192</button>`
+            }
+          </div>
+        </div>`;
+    }
+
+    function selectOption(idx) {
+      userAnswers[currentQuestion] = idx;
+      renderQuiz();
+    }
+
+    function nextQuestion() {
+      if (userAnswers[currentQuestion] === -1) {
+        alert('Please select an answer before continuing.');
+        return;
+      }
+      if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        renderQuiz();
+        window.scrollTo({ top: 200, behavior: 'smooth' });
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        renderQuiz();
+      }
+    }
+
+    // ─── Step 3: Submit & show scorecard ───
+    async function submitQuiz() {
+      if (userAnswers.includes(-1)) {
+        const unanswered = userAnswers.indexOf(-1) + 1;
+        alert('Please answer all questions. Question ' + unanswered + ' is unanswered.');
+        return;
+      }
+
+      showPanel('loadingPanel');
+      document.getElementById('loadingText').textContent = 'AI is evaluating your performance...';
+
+      let correctCount = 0;
+      quizData.forEach((q, i) => {
+        if (userAnswers[i] === q.correct) correctCount++;
+      });
+
+      const res = await apiPost('/api/assessment/evaluate', {
+        role: document.getElementById('role').value,
+        level: document.getElementById('level').value,
+        questions: quizData,
+        userAnswers,
+        correctCount,
+        totalQuestions: quizData.length,
+      });
+
+      if (res.success && res.evaluation) {
+        renderScorecard(res.evaluation, correctCount);
+        showPanel('scorecardPanel');
+      } else {
+        alert('Failed to evaluate: ' + (res.error || 'Unknown error'));
+        showPanel('quizPanel');
+      }
+    }
+
+    function renderScorecard(ev, correctCount) {
+      const score = ev.overallScore || 0;
+      // Save to progress dashboard
+      if (typeof DevGrowProgress !== 'undefined') {
+        DevGrowProgress.saveSkillScore(score, ev.grade || 'N/A');
+      }
+      const dashOffset = 440 - (440 * score / 100);
+      const gradeColors = {
+        'A+': '#10b981', 'A': '#10b981', 'A-': '#10b981',
+        'B+': '#3b82f6', 'B': '#3b82f6', 'B-': '#3b82f6',
+        'C+': '#f59e0b', 'C': '#f59e0b', 'C-': '#f59e0b',
+        'D': '#ef4444', 'F': '#ef4444',
+      };
+      const gradeColor = gradeColors[ev.grade] || '#3b82f6';
+
+      const catHTML = (ev.categoryScores || []).map(cat => `
+        <div class="category-score">
+          <div class="category-score-header">
+            <span class="category-score-name">${cat.category}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="category-score-value">${cat.score}%</span>
+              <span class="status-badge ${cat.status}">${cat.status}</span>
+            </div>
+          </div>
+          <div class="category-bar">
+            <div class="category-bar-fill ${cat.status}" style="width: ${cat.score}%"></div>
+          </div>
+        </div>
+      `).join('');
+
+      const strengthsHTML = (ev.strengths || []).map(s => `
+        <li><span class="sw-icon">\u{1F4AA}</span> ${s}</li>
+      `).join('');
+
+      const weaknessesHTML = (ev.weaknesses || []).map(w => `
+        <li><span class="sw-icon">\u26A0\uFE0F</span> ${w}</li>
+      `).join('');
+
+      const recsHTML = (ev.recommendations || []).map(r => `
+        <div class="rec-card">
+          <div class="rec-header">
+            <span class="rec-title">${r.title}</span>
+            <span class="rec-priority ${r.priority}">${r.priority}</span>
+          </div>
+          <div class="rec-desc">${r.description}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('scorecardPanel').innerHTML = `
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <div class="score-circle">
+              <svg viewBox="0 0 160 160">
+                <circle class="score-circle-bg" cx="80" cy="80" r="70" />
+                <circle class="score-circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset: ${dashOffset}" />
+              </svg>
+              <div class="score-circle-text">
+                <div class="score-value" id="animatedScore">0</div>
+                <div class="score-label">out of 100</div>
+              </div>
+            </div>
+            <div class="score-grade" style="color: ${gradeColor}">Grade: ${ev.grade}</div>
+            <div style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem;">
+              You got <strong style="color:var(--text-primary)">${correctCount}/${quizData.length}</strong> questions correct
+            </div>
+            <p class="score-summary">${ev.summary}</p>
+          </div>
+
+          <div class="scorecard-panel" style="margin-bottom:1.5rem;">
+            <h3>\u{1F4CA} Skill Breakdown</h3>
+            ${catHTML}
+          </div>
+
+          <div class="scorecard-grid">
+            <div class="scorecard-panel">
+              <h3>\u{1F4AA} Strengths</h3>
+              <ul class="sw-list">${strengthsHTML}</ul>
+            </div>
+            <div class="scorecard-panel">
+              <h3>\u26A0\uFE0F Areas to Improve</h3>
+              <ul class="sw-list">${weaknessesHTML}</ul>
+            </div>
+          </div>
+
+          <div class="scorecard-panel" style="margin-bottom:1.5rem;">
+            <h3>\u{1F680} Recommended Next Steps</h3>
+            ${recsHTML}
+          </div>
+
+          <div style="text-align:center;">
+            <button class="btn btn-primary" onclick="retakeQuiz()">\u{1F504} Retake Assessment</button>
+            <a href="/learning-roadmap" class="btn btn-secondary" style="margin-left:0.75rem;">\u{1F5FA}\uFE0F Get Learning Roadmap</a>
+          </div>
+        </div>`;
+
+      animateScore(score);
+    }
+
+    function animateScore(target) {
+      const el = document.getElementById('animatedScore');
+      let current = 0;
+      const duration = 1500;
+      const step = target / (duration / 16);
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        el.textContent = Math.round(current);
+      }, 16);
+    }
+
+    function retakeQuiz() {
+      quizData = [];
+      userAnswers = [];
+      currentQuestion = 0;
+      showPanel('setupPanel');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

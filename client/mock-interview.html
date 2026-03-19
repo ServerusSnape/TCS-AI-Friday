@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock Interview — DevGrow</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+  <div id="navbar-root"></div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>🎙️ <span class="gradient-text">Mock Interview</span></h1>
+      <p>Practice with an AI interviewer and get per-answer feedback with a full performance report.</p>
+    </div>
+
+    <div class="page-content">
+
+      <!-- ====== STEP 1: Setup ====== -->
+      <div id="setupPanel">
+        <form id="interviewSetup">
+          <div class="form-group">
+            <label>Target Role</label>
+            <select class="form-control" id="interviewRole">
+              <optgroup label="Development">
+                <option value="Frontend Developer">Frontend Developer</option>
+                <option value="Backend Developer">Backend Developer</option>
+                <option value="Full-Stack Developer" selected>Full-Stack Developer</option>
+                <option value="Mobile Developer">Mobile Developer</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+              </optgroup>
+              <optgroup label="Quality &amp; Testing">
+                <option value="QA Engineer">QA Engineer (Manual)</option>
+                <option value="Automation Test Engineer">Automation Test Engineer</option>
+                <option value="SDET">SDET</option>
+                <option value="Performance Test Engineer">Performance Test Engineer</option>
+              </optgroup>
+              <optgroup label="Data &amp; AI">
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="Data Engineer">Data Engineer</option>
+                <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+              </optgroup>
+              <optgroup label="Design &amp; Product">
+                <option value="UI/UX Designer">UI/UX Designer</option>
+                <option value="Product Manager">Product Manager</option>
+              </optgroup>
+              <optgroup label="Security &amp; Cloud">
+                <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                <option value="Cloud Engineer">Cloud Engineer</option>
+              </optgroup>
+              <optgroup label="Management &amp; Other">
+                <option value="Engineering Manager">Engineering Manager</option>
+                <option value="Scrum Master">Scrum Master</option>
+                <option value="Technical Writer">Technical Writer</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Topic Focus</label>
+            <select class="form-control" id="interviewTopic">
+              <optgroup label="General">
+                <option value="General">General / Mixed</option>
+              </optgroup>
+              <optgroup label="Development Topics">
+                <option value="Data Structures & Algorithms">DSA</option>
+                <option value="System Design">System Design</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="React">React</option>
+                <option value="Node.js">Node.js</option>
+                <option value="Python">Python</option>
+                <option value="SQL & Databases">SQL & Databases</option>
+              </optgroup>
+              <optgroup label="QA &amp; Testing Topics">
+                <option value="Manual Testing">Manual Testing</option>
+                <option value="Test Automation">Test Automation (Selenium/Cypress)</option>
+                <option value="API Testing">API Testing (Postman/REST)</option>
+                <option value="Performance Testing">Performance Testing (JMeter)</option>
+                <option value="QA Methodologies">QA Methodologies & STLC</option>
+              </optgroup>
+              <optgroup label="Data &amp; Analytics Topics">
+                <option value="Data Analysis & SQL">Data Analysis & SQL</option>
+                <option value="Statistics & Probability">Statistics & Probability</option>
+                <option value="Data Visualization">Data Visualization (Tableau/Power BI)</option>
+              </optgroup>
+              <optgroup label="Other Topics">
+                <option value="Agile & Scrum">Agile & Scrum</option>
+                <option value="Cloud & Infrastructure">Cloud & Infrastructure</option>
+                <option value="Cybersecurity Fundamentals">Cybersecurity Fundamentals</option>
+                <option value="Product Management">Product Management</option>
+                <option value="UX Design Principles">UX Design Principles</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Difficulty</label>
+            <select class="form-control" id="interviewDifficulty">
+              <option value="Easy">🟢 Easy (Junior)</option>
+              <option value="Medium" selected>🟡 Medium (Mid-level)</option>
+              <option value="Hard">🔴 Hard (Senior)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">🎙️ Start Interview</button>
+        </form>
+      </div>
+
+      <!-- ====== STEP 2: Interview (question-by-question) ====== -->
+      <div id="interviewPanel" style="display:none;">
+        <div class="interview-progress-bar" id="progressBar"></div>
+        <div id="questionArea"></div>
+        <div id="feedbackArea"></div>
+      </div>
+
+      <!-- ====== STEP 3: Final Report ====== -->
+      <div id="reportPanel" style="display:none;"></div>
+
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+
+  <script src="/components/navbar.js"></script>
+  <script>
+    document.getElementById('navbar-root').innerHTML = createNavbar('mock-interview');
+    document.getElementById('footer-root').innerHTML = createFooter();
+    initNavbar();
+
+    // =========== State ===========
+    let questions = [];
+    let currentQ = 0;
+    let results = [];  // {question, category, answer, score, evaluation}
+    let config = {};
+
+    // =========== Progress Bar ===========
+    function renderProgress() {
+      const bar = document.getElementById('progressBar');
+      let html = '';
+      for (let i = 0; i < 5; i++) {
+        const isDone = i < currentQ;
+        const isActive = i === currentQ;
+        html += `<div class="progress-step">
+          <div class="step-circle ${isDone ? 'done' : isActive ? 'active' : ''}">${isDone ? '✓' : i + 1}</div>
+          ${i < 4 ? `<div class="step-connector ${isDone ? 'done' : ''}"></div>` : ''}
+        </div>`;
+      }
+      bar.innerHTML = html;
+    }
+
+    // =========== Render Question ===========
+    function showQuestion() {
+      const q = questions[currentQ];
+      const diffClass = `badge-${q.difficulty.toLowerCase()}`;
+      document.getElementById('feedbackArea').innerHTML = '';
+      document.getElementById('questionArea').innerHTML = `
+        <div class="interview-question-card">
+          <div class="question-category">${q.category}</div>
+          <span class="question-badge ${diffClass}">${q.difficulty}</span>
+          <p class="question-text">${q.question}</p>
+        </div>
+        <div class="answer-area">
+          <textarea id="answerBox" placeholder="Type your answer here... Take your time to think through the problem."></textarea>
+          <div class="answer-actions">
+            <span style="color:var(--text-muted);font-size:0.8rem;align-self:center;" id="charCount">0 characters</span>
+            <button class="btn btn-primary" id="submitAnswerBtn" onclick="submitAnswer()">Submit Answer →</button>
+          </div>
+        </div>`;
+      const box = document.getElementById('answerBox');
+      box.addEventListener('input', () => {
+        document.getElementById('charCount').textContent = box.value.length + ' characters';
+      });
+      box.focus();
+      renderProgress();
+    }
+
+    // =========== Submit & Evaluate ===========
+    async function submitAnswer() {
+      const box = document.getElementById('answerBox');
+      const answer = box.value.trim();
+      if (!answer) { box.style.borderColor = '#ef4444'; return; }
+
+      const q = questions[currentQ];
+      const btn = document.getElementById('submitAnswerBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loading-spinner" style="width:18px;height:18px;border-width:2px;"></div> Evaluating...';
+
+      try {
+        const res = await apiPost('/api/interview/evaluate', {
+          question: q.question,
+          answer,
+          role: config.role,
+          difficulty: q.difficulty,
+          category: q.category
+        });
+
+        if (!res.success) throw new Error(res.error);
+
+        const ev = res.evaluation;
+        results.push({ question: q.question, category: q.category, answer, score: ev.score, evaluation: ev });
+
+        showFeedback(ev);
+      } catch (err) {
+        document.getElementById('feedbackArea').innerHTML = `<div class="feedback-card" style="border-color:#ef4444;"><p style="color:#ef4444;">❌ Error: ${err.message}</p></div>`;
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Answer →';
+      }
+    }
+
+    // =========== Show Feedback ===========
+    function showFeedback(ev) {
+      const scoreClass = ev.score >= 7 ? 'high' : ev.score >= 5 ? 'mid' : 'low';
+      const scoreLabel = ev.score >= 8 ? 'Excellent!' : ev.score >= 6 ? 'Good job' : ev.score >= 4 ? 'Needs work' : 'Review this topic';
+      const isLast = currentQ === 4;
+
+      document.getElementById('questionArea').innerHTML = '';
+      document.getElementById('feedbackArea').innerHTML = `
+        <div class="feedback-card">
+          <div class="feedback-score-row">
+            <div class="feedback-score-badge">
+              <span class="score-number ${scoreClass}">${ev.score}</span>
+              <span class="score-max">/ 10</span>
+            </div>
+            <span class="score-label">${scoreLabel}</span>
+          </div>
+
+          <div class="feedback-section">
+            <div class="feedback-section-title strengths">✅ Strengths</div>
+            <ul class="feedback-list">${ev.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+          </div>
+
+          <div class="feedback-section">
+            <div class="feedback-section-title gaps">⚠️ What Was Missing</div>
+            <ul class="feedback-list">${ev.gaps.map(g => `<li>${g}</li>`).join('')}</ul>
+          </div>
+
+          <div class="feedback-section">
+            <div class="feedback-section-title ideal">💎 Model Answer</div>
+            <div class="ideal-answer-box">${ev.idealAnswer}</div>
+          </div>
+
+          <div class="feedback-section">
+            <div class="feedback-section-title tip">🎯 Pro Tip</div>
+            <div class="tip-box">${ev.tip}</div>
+          </div>
+
+          <div style="text-align:right;margin-top:1rem;">
+            <button class="btn btn-primary next-question-btn" onclick="${isLast ? 'generateReport()' : 'nextQuestion()'}">
+              ${isLast ? '📊 View Full Report' : `Next Question (${currentQ + 2}/5) →`}
+            </button>
+          </div>
+        </div>`;
+      renderProgress();
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      showQuestion();
+    }
+
+    // =========== Start Interview ===========
+    document.getElementById('interviewSetup').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      config = {
+        role: document.getElementById('interviewRole').value,
+        topic: document.getElementById('interviewTopic').value,
+        difficulty: document.getElementById('interviewDifficulty').value
+      };
+
+      document.getElementById('setupPanel').style.display = 'none';
+      document.getElementById('interviewPanel').style.display = 'block';
+
+      // Show loading
+      document.getElementById('questionArea').innerHTML = `
+        <div class="loading" style="padding:3rem 0;">
+          <div class="loading-spinner"></div>
+          <p>AI Interviewer is preparing your questions...</p>
+        </div>`;
+      renderProgress();
+
+      try {
+        const res = await apiPost('/api/interview/generate', config);
+        if (!res.success) throw new Error(res.error);
+        questions = res.questions;
+        currentQ = 0;
+        results = [];
+        showQuestion();
+      } catch (err) {
+        document.getElementById('questionArea').innerHTML = `
+          <div class="feedback-card" style="border-color:#ef4444;">
+            <p style="color:#ef4444;">❌ Failed to generate questions: ${err.message}</p>
+            <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+          </div>`;
+      }
+    });
+
+    // =========== Final Report ===========
+    async function generateReport() {
+      document.getElementById('interviewPanel').style.display = 'none';
+      document.getElementById('reportPanel').style.display = 'block';
+      document.getElementById('reportPanel').innerHTML = `
+        <div class="loading" style="padding:3rem 0;">
+          <div class="loading-spinner"></div>
+          <p>AI is analyzing your full interview performance...</p>
+        </div>`;
+
+      try {
+        const payload = {
+          role: config.role,
+          difficulty: config.difficulty,
+          topic: config.topic,
+          questionsAndResults: results.map(r => ({
+            question: r.question,
+            category: r.category,
+            answer: r.answer,
+            score: r.score
+          }))
+        };
+
+        const res = await apiPost('/api/interview/report', payload);
+        if (!res.success) throw new Error(res.error);
+        renderReport(res.report);
+      } catch (err) {
+        document.getElementById('reportPanel').innerHTML = `
+          <div class="feedback-card" style="border-color:#ef4444;">
+            <p style="color:#ef4444;">❌ Failed to generate report: ${err.message}</p>
+            <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+          </div>`;
+      }
+    }
+
+    function renderReport(report) {
+      // Save to progress dashboard
+      if (typeof DevGrowProgress !== 'undefined') {
+        DevGrowProgress.saveInterviewSession(report.overallScore || 0);
+      }
+      const verdictSlug = report.verdict.toLowerCase().replace(/\s+/g, '-');
+
+      let qScoresHTML = results.map((r, i) => {
+        const pct = (r.score / 10) * 100;
+        const color = r.score >= 7 ? '#22c55e' : r.score >= 5 ? '#f59e0b' : '#ef4444';
+        return `<li>
+          <span class="qs-label">Q${i + 1}: ${r.category}</span>
+          <div class="qs-bar-track"><div class="qs-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+          <span class="qs-score-val">${r.score}/10</span>
+        </li>`;
+      }).join('');
+
+      document.getElementById('reportPanel').innerHTML = `
+        <div class="report-container">
+          <div class="report-header">
+            <h2>📊 Interview Performance Report</h2>
+            <div class="report-overall-score">
+              <div class="report-big-score">${report.overallScore}</div>
+              <span class="report-verdict verdict-${verdictSlug}">${report.verdict}</span>
+            </div>
+            <p class="report-summary">${report.summary}</p>
+          </div>
+
+          <div class="report-grid">
+            <!-- Radar Chart -->
+            <div class="report-card">
+              <div class="report-card-title">🕸️ Skill Radar</div>
+              <div class="radar-chart-container">
+                <canvas id="radarCanvas" width="320" height="320"></canvas>
+              </div>
+            </div>
+
+            <!-- Per-Question Scores -->
+            <div class="report-card">
+              <div class="report-card-title">📋 Question Scores</div>
+              <ul class="question-scores-list">${qScoresHTML}</ul>
+            </div>
+
+            <!-- Strengths -->
+            <div class="report-card">
+              <div class="report-card-title">💪 Top Strengths</div>
+              <ul class="report-strengths-list">${report.topStrengths.map(s => `<li>${s}</li>`).join('')}</ul>
+            </div>
+
+            <!-- Gaps -->
+            <div class="report-card">
+              <div class="report-card-title">🔍 Critical Gaps</div>
+              <ul class="report-gaps-list">${report.criticalGaps.map(g => `<li>${g}</li>`).join('')}</ul>
+            </div>
+          </div>
+
+          <!-- Improvement Plan -->
+          <div class="report-card" style="margin-bottom:1.5rem;">
+            <div class="report-card-title">🗺️ Improvement Plan</div>
+            <div class="improvement-plan">
+              ${report.improvementPlan.map(item => `
+                <div class="improvement-item">
+                  <span class="imp-area">${item.area}</span>
+                  <span class="imp-timeframe">⏱️ ${item.timeframe}</span>
+                  <span class="imp-action">${item.action}</span>
+                  <span class="imp-resource">📚 ${item.resource}</span>
+                </div>`).join('')}
+            </div>
+          </div>
+
+          <!-- Interview Tips -->
+          <div class="report-card" style="margin-bottom:2rem;">
+            <div class="report-card-title">🎯 Interview Tips</div>
+            <ul class="interview-tips-list">${report.interviewTips.map(t => `<li>${t}</li>`).join('')}</ul>
+          </div>
+
+          <div style="text-align:center;">
+            <button class="btn btn-primary" onclick="location.reload()" style="min-width:200px;">🔄 Take Another Interview</button>
+          </div>
+        </div>`;
+
+      // Draw radar chart
+      drawRadarChart(report.categoryScores);
+    }
+
+    // =========== Radar Chart (Canvas) ===========
+    function drawRadarChart(categories) {
+      const canvas = document.getElementById('radarCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const cx = W / 2, cy = H / 2;
+      const R = Math.min(cx, cy) - 40;
+      const n = categories.length;
+      const angleStep = (2 * Math.PI) / n;
+      const startAngle = -Math.PI / 2;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Grid rings
+      const rings = [0.2, 0.4, 0.6, 0.8, 1.0];
+      rings.forEach(scale => {
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+          const angle = startAngle + i * angleStep;
+          const x = cx + R * scale * Math.cos(angle);
+          const y = cy + R * scale * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      // Axis lines
+      for (let i = 0; i < n; i++) {
+        const angle = startAngle + i * angleStep;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Data polygon
+      ctx.beginPath();
+      categories.forEach((cat, i) => {
+        const val = cat.score / cat.maxScore;
+        const angle = startAngle + i * angleStep;
+        const x = cx + R * val * Math.cos(angle);
+        const y = cy + R * val * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      grad.addColorStop(0, 'rgba(79, 140, 255, 0.35)');
+      grad.addColorStop(1, 'rgba(160, 120, 255, 0.15)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(79, 140, 255, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Data points
+      categories.forEach((cat, i) => {
+        const val = cat.score / cat.maxScore;
+        const angle = startAngle + i * angleStep;
+        const x = cx + R * val * Math.cos(angle);
+        const y = cy + R * val * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.fillStyle = '#4f8cff';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+
+      // Labels
+      ctx.font = '11px Inter, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      categories.forEach((cat, i) => {
+        const angle = startAngle + i * angleStep;
+        const labelR = R + 24;
+        let x = cx + labelR * Math.cos(angle);
+        let y = cy + labelR * Math.sin(angle);
+        // Shorten long labels
+        let label = cat.category.length > 14 ? cat.category.substring(0, 13) + '…' : cat.category;
+        ctx.fillText(label, x, y);
+        // Score underneath
+        ctx.font = 'bold 10px Inter, sans-serif';
+        ctx.fillStyle = '#4f8cff';
+        ctx.fillText(cat.score + '/' + cat.maxScore, x, y + 14);
+        ctx.font = '11px Inter, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+      });
+    }
+  </script>
+</body>
+</html>
